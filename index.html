@@ -226,20 +226,50 @@
       </div>
       
       <div id="portfolioSummary" style="display: none;">
+        <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 14px; color: #6b7280; font-weight: 600;">Cost Base</span>
+            <span style="font-size: 20px; font-weight: bold; color: #1f2937;" id="portfolioCostBase">$0.00</span>
+          </div>
+        </div>
+        
         <div class="two-column">
           <div class="column">
             <div class="column-title">Daily</div>
             <div class="metric">
               <div class="metric-label">Total Change</div>
               <div class="metric-value" id="dailyTotal">$0.00</div>
+              <div style="font-size: 14px; color: #6b7280; margin-top: 4px;" id="dailyTotalPct"></div>
               <div class="breakdown">
                 <div class="breakdown-item">
                   <span>Capital</span>
-                  <span class="breakdown-value" id="dailyCapital">$0.00</span>
+                  <span>
+                    <span class="breakdown-value" id="dailyCapital">$0.00</span>
+                    <span style="font-size: 11px; font-style: italic; margin-left: 4px;" id="dailyCapitalPct"></span>
+                  </span>
                 </div>
                 <div class="breakdown-item">
                   <span>Cash</span>
-                  <span class="breakdown-value blue" id="dailyCash">$0.00</span>
+                  <span>
+                    <span class="breakdown-value blue" id="dailyCash">$0.00</span>
+                    <span style="font-size: 11px; font-style: italic; margin-left: 4px;" id="dailyCashPct"></span>
+                  </span>
+                </div>
+                <div style="margin-left: 12px; margin-top: 4px;">
+                  <div class="breakdown-item" style="font-size: 11px;">
+                    <span>Dividends</span>
+                    <span>
+                      <span class="breakdown-value" id="dailyDivs">$0.00</span>
+                      <span style="font-size: 10px; font-style: italic; margin-left: 4px;" id="dailyDivsPct"></span>
+                    </span>
+                  </div>
+                  <div class="breakdown-item" style="font-size: 11px;">
+                    <span>Franking</span>
+                    <span>
+                      <span class="breakdown-value" id="dailyFrank">$0.00</span>
+                      <span style="font-size: 10px; font-style: italic; margin-left: 4px;" id="dailyFrankPct"></span>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -250,16 +280,54 @@
             <div class="metric">
               <div class="metric-label">Total Change</div>
               <div class="metric-value" id="ltdTotal">$0.00</div>
+              <div style="font-size: 14px; color: #6b7280; margin-top: 4px;" id="ltdTotalPct"></div>
               <div class="breakdown">
                 <div class="breakdown-item">
                   <span>Capital</span>
-                  <span class="breakdown-value" id="ltdCapital">$0.00</span>
+                  <span>
+                    <span class="breakdown-value" id="ltdCapital">$0.00</span>
+                    <span style="font-size: 11px; font-style: italic; margin-left: 4px;" id="ltdCapitalPct"></span>
+                  </span>
                 </div>
                 <div class="breakdown-item">
                   <span>Cash</span>
-                  <span class="breakdown-value blue" id="ltdCash">$0.00</span>
+                  <span>
+                    <span class="breakdown-value blue" id="ltdCash">$0.00</span>
+                    <span style="font-size: 11px; font-style: italic; margin-left: 4px;" id="ltdCashPct"></span>
+                  </span>
+                </div>
+                <div style="margin-left: 12px; margin-top: 4px;">
+                  <div class="breakdown-item" style="font-size: 11px;">
+                    <span>Dividends</span>
+                    <span>
+                      <span class="breakdown-value" id="ltdDivs">$0.00</span>
+                      <span style="font-size: 10px; font-style: italic; margin-left: 4px;" id="ltdDivsPct"></span>
+                    </span>
+                  </div>
+                  <div class="breakdown-item" style="font-size: 11px;">
+                    <span>Franking</span>
+                    <span>
+                      <span class="breakdown-value" id="ltdFrank">$0.00</span>
+                      <span style="font-size: 10px; font-style: italic; margin-left: 4px;" id="ltdFrankPct"></span>
+                    </span>
+                  </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- ASX 200 Comparison -->
+        <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin-top: 16px;">
+          <div style="font-size: 14px; font-weight: bold; color: #1f2937; margin-bottom: 12px;">vs ASX 200</div>
+          <div class="two-column" style="gap: 12px;">
+            <div>
+              <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Daily</div>
+              <div style="font-size: 16px; font-weight: bold;" id="vsIndexDaily">...</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Life-to-date</div>
+              <div style="font-size: 16px; font-weight: bold;" id="vsIndexLtd">...</div>
             </div>
           </div>
         </div>
@@ -298,6 +366,9 @@
     let portfolio = [];
     let dividends = {};
     let editingIndex = -1;
+    let indexCurrentPrice = 0;
+    let indexPrevClose = 0;
+    let indexStartPrice = 0; // Price on 2025-11-10
 
     window.addEventListener('load', () => {
       loadData();
@@ -313,11 +384,17 @@
       
       const savedDivs = localStorage.getItem('asx-dividends');
       dividends = savedDivs ? JSON.parse(savedDivs) : {};
+      
+      const savedIndexStart = localStorage.getItem('asx-index-start');
+      indexStartPrice = savedIndexStart ? parseFloat(savedIndexStart) : 0;
     }
 
     function saveData() {
       localStorage.setItem('asx-portfolio', JSON.stringify(portfolio));
       localStorage.setItem('asx-dividends', JSON.stringify(dividends));
+      if (indexStartPrice > 0) {
+        localStorage.setItem('asx-index-start', indexStartPrice.toString());
+      }
     }
 
     function openAddModal() {
@@ -408,6 +485,42 @@
       }
     }
 
+    async function fetchIndexData() {
+      try {
+        const PURCHASE_TIMESTAMP = Math.floor(new Date('2025-11-10').getTime() / 1000);
+        
+        // Get start price if not saved
+        if (!indexStartPrice || indexStartPrice === 0) {
+          const startUrl = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&period1=${PURCHASE_TIMESTAMP}&period2=${PURCHASE_TIMESTAMP + 86400}`;
+          const startRes = await fetch(`https://corsproxy.io/?${encodeURIComponent(startUrl)}`);
+          
+          if (startRes.ok) {
+            const startData = await startRes.json();
+            const closes = startData?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
+            if (closes && closes.length > 0) {
+              indexStartPrice = closes.find(c => c !== null);
+            }
+          }
+        }
+        
+        // Get current and previous close
+        const currentUrl = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=2d`;
+        const currentRes = await fetch(`https://corsproxy.io/?${encodeURIComponent(currentUrl)}`);
+        
+        if (currentRes.ok) {
+          const currentData = await currentRes.json();
+          const meta = currentData?.chart?.result?.[0]?.meta;
+          
+          if (meta) {
+            indexCurrentPrice = meta.regularMarketPrice || 0;
+            indexPrevClose = meta.previousClose || 0;
+          }
+        }
+      } catch (e) {
+        console.error('Error fetching ASX 200:', e);
+      }
+    }
+
     async function updatePrices() {
       if (portfolio.length === 0) return;
       
@@ -432,6 +545,9 @@
       
       const results = await Promise.all(promises);
       success = results.filter(r => r).length;
+      
+      // Fetch ASX 200 data
+      await fetchIndexData();
       
       saveData();
       render();
@@ -467,10 +583,14 @@
         
         if (!events) return [];
         
-        return Object.values(events).map(d => ({
-          date: new Date(d.date * 1000),
-          amount: d.amount
-        }));
+        const startDate = new Date('2025-11-10');
+        
+        return Object.values(events)
+          .map(d => ({
+            date: new Date(d.date * 1000),
+            amount: d.amount
+          }))
+          .filter(d => d.date >= startDate);
       } catch (e) {
         return [];
       }
@@ -600,12 +720,34 @@
       const dailyCash = todayDivs + todayFranking;
       const dailyTotal = dailyCapital + dailyCash;
       
+      // Set cost base
+      document.getElementById('portfolioCostBase').textContent = fmt(totalCost);
+      
+      // Daily column
       document.getElementById('dailyTotal').textContent = fmt(dailyTotal);
       document.getElementById('dailyTotal').className = `metric-value ${dailyTotal >= 0 ? 'green' : 'red'}`;
       document.getElementById('dailyCapital').textContent = fmt(dailyCapital);
       document.getElementById('dailyCapital').className = `breakdown-value ${dailyCapital >= 0 ? 'green' : 'red'}`;
       document.getElementById('dailyCash').textContent = fmt(dailyCash);
+      document.getElementById('dailyDivs').textContent = fmt(todayDivs);
+      document.getElementById('dailyFrank').textContent = fmt(todayFranking);
       
+      // Daily breakdown percentages
+      const dailyCapitalPct = totalPrevValue > 0 ? (dailyCapital / totalPrevValue) * 100 : 0;
+      const dailyCashPct = totalPrevValue > 0 ? (dailyCash / totalPrevValue) * 100 : 0;
+      document.getElementById('dailyCapitalPct').textContent = `(${dailyCapitalPct >= 0 ? '+' : ''}${dailyCapitalPct.toFixed(2)}%)`;
+      document.getElementById('dailyCapitalPct').style.color = dailyCapital >= 0 ? '#16a34a' : '#dc2626';
+      document.getElementById('dailyCashPct').textContent = dailyCash !== 0 ? `(${dailyCashPct >= 0 ? '+' : ''}${dailyCashPct.toFixed(2)}%)` : '';
+      document.getElementById('dailyCashPct').style.color = '#2563eb';
+      
+      const dailyDivsPct = totalPrevValue > 0 ? (todayDivs / totalPrevValue) * 100 : 0;
+      const dailyFrankPct = totalPrevValue > 0 ? (todayFranking / totalPrevValue) * 100 : 0;
+      document.getElementById('dailyDivsPct').textContent = todayDivs !== 0 ? `(${dailyDivsPct >= 0 ? '+' : ''}${dailyDivsPct.toFixed(2)}%)` : '';
+      document.getElementById('dailyDivsPct').style.color = '#2563eb';
+      document.getElementById('dailyFrankPct').textContent = todayFranking !== 0 ? `(${dailyFrankPct >= 0 ? '+' : ''}${dailyFrankPct.toFixed(2)}%)` : '';
+      document.getElementById('dailyFrankPct').style.color = '#2563eb';
+      
+      // Life-to-date column
       const ltdCapital = totalValue - totalCost;
       const ltdCash = totalDivs + totalFranking;
       const ltdTotal = ltdCapital + ltdCash;
@@ -615,6 +757,58 @@
       document.getElementById('ltdCapital').textContent = fmt(ltdCapital);
       document.getElementById('ltdCapital').className = `breakdown-value ${ltdCapital >= 0 ? 'green' : 'red'}`;
       document.getElementById('ltdCash').textContent = fmt(ltdCash);
+      document.getElementById('ltdDivs').textContent = fmt(totalDivs);
+      document.getElementById('ltdFrank').textContent = fmt(totalFranking);
+      
+      // Life-to-date breakdown percentages
+      const ltdCapitalPct = totalCost > 0 ? (ltdCapital / totalCost) * 100 : 0;
+      const ltdCashPct = totalCost > 0 ? (ltdCash / totalCost) * 100 : 0;
+      document.getElementById('ltdCapitalPct').textContent = `(${ltdCapitalPct >= 0 ? '+' : ''}${ltdCapitalPct.toFixed(2)}%)`;
+      document.getElementById('ltdCapitalPct').style.color = ltdCapital >= 0 ? '#16a34a' : '#dc2626';
+      document.getElementById('ltdCashPct').textContent = ltdCash !== 0 ? `(${ltdCashPct >= 0 ? '+' : ''}${ltdCashPct.toFixed(2)}%)` : '';
+      document.getElementById('ltdCashPct').style.color = '#2563eb';
+      
+      const ltdDivsPct = totalCost > 0 ? (totalDivs / totalCost) * 100 : 0;
+      const ltdFrankPct = totalCost > 0 ? (totalFranking / totalCost) * 100 : 0;
+      document.getElementById('ltdDivsPct').textContent = totalDivs !== 0 ? `(${ltdDivsPct >= 0 ? '+' : ''}${ltdDivsPct.toFixed(2)}%)` : '';
+      document.getElementById('ltdDivsPct').style.color = '#2563eb';
+      document.getElementById('ltdFrankPct').textContent = totalFranking !== 0 ? `(${ltdFrankPct >= 0 ? '+' : ''}${ltdFrankPct.toFixed(2)}%)` : '';
+      document.getElementById('ltdFrankPct').style.color = '#2563eb';
+      
+      // Calculate percentages
+      const dailyPct = totalPrevValue > 0 ? (dailyTotal / totalPrevValue) * 100 : 0;
+      const ltdPct = totalCost > 0 ? (ltdTotal / totalCost) * 100 : 0;
+      
+      document.getElementById('dailyTotalPct').textContent = `(${dailyPct >= 0 ? '+' : ''}${dailyPct.toFixed(2)}%)`;
+      document.getElementById('dailyTotalPct').style.color = dailyPct >= 0 ? '#16a34a' : '#dc2626';
+      
+      document.getElementById('ltdTotalPct').textContent = `(${ltdPct >= 0 ? '+' : ''}${ltdPct.toFixed(2)}%)`;
+      document.getElementById('ltdTotalPct').style.color = ltdPct >= 0 ? '#16a34a' : '#dc2626';
+      
+      // ASX 200 comparison
+      if (indexCurrentPrice > 0 && indexPrevClose > 0) {
+        const indexDailyChange = ((indexCurrentPrice - indexPrevClose) / indexPrevClose) * 100;
+        const portfolioDailyPct = dailyPct;
+        const vsIndexDaily = portfolioDailyPct - indexDailyChange;
+        
+        document.getElementById('vsIndexDaily').textContent = `${vsIndexDaily >= 0 ? '+' : ''}${vsIndexDaily.toFixed(2)}%`;
+        document.getElementById('vsIndexDaily').style.color = vsIndexDaily >= 0 ? '#16a34a' : '#dc2626';
+      } else {
+        document.getElementById('vsIndexDaily').textContent = '...';
+        document.getElementById('vsIndexDaily').style.color = '#6b7280';
+      }
+      
+      if (indexCurrentPrice > 0 && indexStartPrice > 0 && totalCost > 0) {
+        const indexLtdChange = ((indexCurrentPrice - indexStartPrice) / indexStartPrice) * 100;
+        const portfolioLtdPct = ltdPct;
+        const vsIndexLtd = portfolioLtdPct - indexLtdChange;
+        
+        document.getElementById('vsIndexLtd').textContent = `${vsIndexLtd >= 0 ? '+' : ''}${vsIndexLtd.toFixed(2)}%`;
+        document.getElementById('vsIndexLtd').style.color = vsIndexLtd >= 0 ? '#16a34a' : '#dc2626';
+      } else {
+        document.getElementById('vsIndexLtd').textContent = '...';
+        document.getElementById('vsIndexLtd').style.color = '#6b7280';
+      }
     }
 
     function renderStocks() {
@@ -636,6 +830,10 @@
         const ltdCash = divs.totalDiv + divs.totalFranking;
         const ltdTotal = ltdCapital + ltdCash;
         
+        // Calculate percentages
+        const dailyPct = prevValue > 0 ? (dailyTotal / prevValue) * 100 : 0;
+        const ltdPct = cost > 0 ? (ltdTotal / cost) * 100 : 0;
+        
         const stockDivs = dividends[stock.code] || [];
 
         html += `
@@ -651,6 +849,13 @@
               </div>
             </div>
             
+            <div style="background: #f9fafb; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; color: #6b7280; font-weight: 600;">Cost Base</span>
+                <span style="font-size: 16px; font-weight: bold; color: #1f2937;">${fmt(cost)}</span>
+              </div>
+            </div>
+            
             <div class="two-column">
               <div class="column">
                 <div class="column-title">Daily</div>
@@ -659,16 +864,49 @@
                   <div class="metric-value ${stock.price > 0 ? (dailyTotal >= 0 ? 'green' : 'red') : ''}">
                     ${stock.price > 0 ? fmt(dailyTotal) : '...'}
                   </div>
+                  <div style="font-size: 14px; color: ${stock.price > 0 ? (dailyPct >= 0 ? '#16a34a' : '#dc2626') : '#6b7280'}; margin-top: 4px;">
+                    ${stock.price > 0 ? `(${dailyPct >= 0 ? '+' : ''}${dailyPct.toFixed(2)}%)` : ''}
+                  </div>
                   <div class="breakdown">
                     <div class="breakdown-item">
                       <span>Capital</span>
-                      <span class="breakdown-value ${stock.price > 0 ? (dailyCapital >= 0 ? 'green' : 'red') : ''}">
-                        ${stock.price > 0 ? fmt(dailyCapital) : '$0.00'}
+                      <span>
+                        <span class="breakdown-value ${stock.price > 0 ? (dailyCapital >= 0 ? 'green' : 'red') : ''}">
+                          ${stock.price > 0 ? fmt(dailyCapital) : '$0.00'}
+                        </span>
+                        <span style="font-size: 11px; font-style: italic; margin-left: 4px; color: ${stock.price > 0 ? (dailyCapital >= 0 ? '#16a34a' : '#dc2626') : '#6b7280'};">
+                          ${stock.price > 0 && prevValue > 0 ? `(${((dailyCapital / prevValue) * 100) >= 0 ? '+' : ''}${((dailyCapital / prevValue) * 100).toFixed(2)}%)` : ''}
+                        </span>
                       </span>
                     </div>
                     <div class="breakdown-item">
                       <span>Cash</span>
-                      <span class="breakdown-value ${dailyCash > 0 ? 'blue' : ''}">${fmt(dailyCash)}</span>
+                      <span>
+                        <span class="breakdown-value ${dailyCash > 0 ? 'blue' : ''}">${fmt(dailyCash)}</span>
+                        <span style="font-size: 11px; font-style: italic; margin-left: 4px; color: #2563eb;">
+                          ${stock.price > 0 && prevValue > 0 && dailyCash !== 0 ? `(${((dailyCash / prevValue) * 100) >= 0 ? '+' : ''}${((dailyCash / prevValue) * 100).toFixed(2)}%)` : ''}
+                        </span>
+                      </span>
+                    </div>
+                    <div style="margin-left: 12px; margin-top: 4px;">
+                      <div class="breakdown-item" style="font-size: 11px;">
+                        <span>Dividends</span>
+                        <span>
+                          <span class="breakdown-value">${fmt(todayDivs.todayDiv)}</span>
+                          <span style="font-size: 10px; font-style: italic; margin-left: 4px; color: #2563eb;">
+                            ${stock.price > 0 && prevValue > 0 && todayDivs.todayDiv !== 0 ? `(${((todayDivs.todayDiv / prevValue) * 100) >= 0 ? '+' : ''}${((todayDivs.todayDiv / prevValue) * 100).toFixed(2)}%)` : ''}
+                          </span>
+                        </span>
+                      </div>
+                      <div class="breakdown-item" style="font-size: 11px;">
+                        <span>Franking</span>
+                        <span>
+                          <span class="breakdown-value">${fmt(todayDivs.todayFranking)}</span>
+                          <span style="font-size: 10px; font-style: italic; margin-left: 4px; color: #2563eb;">
+                            ${stock.price > 0 && prevValue > 0 && todayDivs.todayFranking !== 0 ? `(${((todayDivs.todayFranking / prevValue) * 100) >= 0 ? '+' : ''}${((todayDivs.todayFranking / prevValue) * 100).toFixed(2)}%)` : ''}
+                          </span>
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -681,16 +919,49 @@
                   <div class="metric-value ${stock.price > 0 ? (ltdTotal >= 0 ? 'green' : 'red') : ''}">
                     ${stock.price > 0 ? fmt(ltdTotal) : '...'}
                   </div>
+                  <div style="font-size: 14px; color: ${stock.price > 0 ? (ltdPct >= 0 ? '#16a34a' : '#dc2626') : '#6b7280'}; margin-top: 4px;">
+                    ${stock.price > 0 ? `(${ltdPct >= 0 ? '+' : ''}${ltdPct.toFixed(2)}%)` : ''}
+                  </div>
                   <div class="breakdown">
                     <div class="breakdown-item">
                       <span>Capital</span>
-                      <span class="breakdown-value ${stock.price > 0 ? (ltdCapital >= 0 ? 'green' : 'red') : ''}">
-                        ${stock.price > 0 ? fmt(ltdCapital) : '$0.00'}
+                      <span>
+                        <span class="breakdown-value ${stock.price > 0 ? (ltdCapital >= 0 ? 'green' : 'red') : ''}">
+                          ${stock.price > 0 ? fmt(ltdCapital) : '$0.00'}
+                        </span>
+                        <span style="font-size: 11px; font-style: italic; margin-left: 4px; color: ${stock.price > 0 ? (ltdCapital >= 0 ? '#16a34a' : '#dc2626') : '#6b7280'};">
+                          ${stock.price > 0 && cost > 0 ? `(${((ltdCapital / cost) * 100) >= 0 ? '+' : ''}${((ltdCapital / cost) * 100).toFixed(2)}%)` : ''}
+                        </span>
                       </span>
                     </div>
                     <div class="breakdown-item">
                       <span>Cash</span>
-                      <span class="breakdown-value blue">${fmt(ltdCash)}</span>
+                      <span>
+                        <span class="breakdown-value blue">${fmt(ltdCash)}</span>
+                        <span style="font-size: 11px; font-style: italic; margin-left: 4px; color: #2563eb;">
+                          ${cost > 0 && ltdCash !== 0 ? `(${((ltdCash / cost) * 100) >= 0 ? '+' : ''}${((ltdCash / cost) * 100).toFixed(2)}%)` : ''}
+                        </span>
+                      </span>
+                    </div>
+                    <div style="margin-left: 12px; margin-top: 4px;">
+                      <div class="breakdown-item" style="font-size: 11px;">
+                        <span>Dividends</span>
+                        <span>
+                          <span class="breakdown-value">${fmt(divs.totalDiv)}</span>
+                          <span style="font-size: 10px; font-style: italic; margin-left: 4px; color: #2563eb;">
+                            ${cost > 0 && divs.totalDiv !== 0 ? `(${((divs.totalDiv / cost) * 100) >= 0 ? '+' : ''}${((divs.totalDiv / cost) * 100).toFixed(2)}%)` : ''}
+                          </span>
+                        </span>
+                      </div>
+                      <div class="breakdown-item" style="font-size: 11px;">
+                        <span>Franking</span>
+                        <span>
+                          <span class="breakdown-value">${fmt(divs.totalFranking)}</span>
+                          <span style="font-size: 10px; font-style: italic; margin-left: 4px; color: #2563eb;">
+                            ${cost > 0 && divs.totalFranking !== 0 ? `(${((divs.totalFranking / cost) * 100) >= 0 ? '+' : ''}${((divs.totalFranking / cost) * 100).toFixed(2)}%)` : ''}
+                          </span>
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
