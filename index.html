@@ -207,9 +207,110 @@
     .btn-cancel { background: #e5e7eb; color: #4b5563; }
     
     @media (max-width: 640px) {
+      body { padding: 12px; }
+      .card { padding: 16px; }
+      
+      /* Header */
       .header { flex-direction: column; align-items: stretch; gap: 12px; }
-      .header h1 { text-align: center; }
+      .header h1 { text-align: center; font-size: 22px; }
       .header-buttons { justify-content: center; }
+      .btn { 
+        padding: 12px 16px; 
+        font-size: 13px;
+        min-height: 44px; /* iOS touch target minimum */
+      }
+      .stock-buttons { gap: 6px; }
+      .stock-buttons button {
+        padding: 8px 12px;
+        min-height: 40px;
+      }
+      
+      /* Two-column layout - stack vertically on mobile */
+      .two-column {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      
+      /* Columns */
+      .column { padding: 12px; }
+      .column-title { font-size: 14px; margin-bottom: 10px; }
+      
+      /* Metrics */
+      .metric-label { font-size: 10px; }
+      .metric-value { font-size: 16px; }
+      .metric-value + div[style*="font-size: 14px"] {
+        font-size: 12px !important;
+      }
+      
+      /* Breakdown */
+      .breakdown { margin-left: 8px; margin-top: 6px; padding-top: 6px; }
+      .breakdown-item { 
+        font-size: 11px; 
+        margin-top: 3px;
+        gap: 8px;
+      }
+      .breakdown-item span:first-child { max-width: 60%; }
+      .breakdown-item > span:last-child {
+        text-align: right;
+        white-space: nowrap;
+      }
+      
+      /* Ensure percentages don't break awkwardly */
+      .breakdown-value {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 3px;
+        flex-wrap: wrap;
+      }
+      
+      /* Cost base row on mobile */
+      .card > div[style*="background: #f9fafb"] {
+        padding: 12px !important;
+        margin-bottom: 12px !important;
+      }
+      .card > div[style*="background: #f9fafb"] span {
+        font-size: 12px !important;
+      }
+      .card > div[style*="background: #f9fafb"] span[style*="font-size: 20px"] {
+        font-size: 18px !important;
+      }
+      .card > div[style*="background: #f9fafb"] span[style*="font-size: 16px"] {
+        font-size: 14px !important;
+      }
+      
+      /* Stock cost base */
+      .stock > div[style*="background: #f9fafb"] span[style*="font-size: 16px"] {
+        font-size: 14px !important;
+      }
+      
+      /* Stock cards */
+      .stock { padding: 14px; margin-bottom: 10px; }
+      .stock-header { margin-bottom: 12px; padding-bottom: 10px; }
+      .stock-code { font-size: 16px; }
+      .stock-qty { font-size: 11px; }
+      .stock-price-label { font-size: 10px; }
+      .stock-price-value { font-size: 14px; }
+      
+      /* Dividend list */
+      .dividend-list { margin-top: 12px; padding-top: 12px; }
+      .dividend-item { font-size: 11px; padding: 6px 0; }
+      
+      /* Status message */
+      .status { font-size: 11px; margin-top: 8px; }
+      
+      /* Modal on mobile */
+      .modal-content { 
+        width: 95%;
+        max-width: 350px;
+        padding: 20px;
+      }
+      .modal-content h2 { font-size: 18px; }
+      
+      /* Empty state */
+      .empty-state { padding: 30px 20px; }
+      .empty-state-icon { font-size: 40px; }
+      .empty-state-text { font-size: 15px; }
+      .empty-state-hint { font-size: 12px; }
     }
   </style>
 </head>
@@ -477,10 +578,29 @@
         }
         
         const data = await res.json();
-        const meta = data?.chart?.result?.[0]?.meta;
+        const result = data?.chart?.result?.[0];
+        const meta = result?.meta;
         
+        // Get current price
         const price = meta?.regularMarketPrice;
-        const prevClose = meta?.chartPreviousClose || meta?.previousClose;
+        
+        // Get previous close from indicators.quote.close array
+        // This has the actual closing prices, not the chart reference point
+        const closes = result?.indicators?.quote?.[0]?.close;
+        let prevClose = null;
+        
+        if (closes && closes.length >= 2) {
+          // Get second-to-last close (most recent previous day)
+          prevClose = closes[closes.length - 2];
+        } else if (closes && closes.length === 1) {
+          // Fallback to first close if only one available
+          prevClose = closes[0];
+        }
+        
+        // Final fallback to meta fields if close array not available
+        if (!prevClose) {
+          prevClose = meta?.previousClose || meta?.chartPreviousClose;
+        }
         
         if (!price || !prevClose) {
           console.error(`${code}: Missing price data`);
@@ -522,11 +642,22 @@
         
         if (currentRes.ok) {
           const currentData = await currentRes.json();
-          const meta = currentData?.chart?.result?.[0]?.meta;
+          const result = currentData?.chart?.result?.[0];
+          const meta = result?.meta;
           
           if (meta) {
             indexCurrentPrice = meta.regularMarketPrice || 0;
-            indexPrevClose = meta.chartPreviousClose || meta.previousClose || 0;
+            
+            // Get previous close from indicators.quote.close array
+            const closes = result?.indicators?.quote?.[0]?.close;
+            if (closes && closes.length >= 2) {
+              indexPrevClose = closes[closes.length - 2];
+            } else if (closes && closes.length === 1) {
+              indexPrevClose = closes[0];
+            } else {
+              // Fallback to meta fields
+              indexPrevClose = meta.previousClose || meta.chartPreviousClose || 0;
+            }
           }
         }
       } catch (e) {
