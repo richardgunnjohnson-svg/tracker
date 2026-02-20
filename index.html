@@ -9,13 +9,17 @@
   
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 100%);
       min-height: 100vh;
       padding: 16px;
     }
+    
     .container { max-width: 800px; margin: 0 auto; }
+    
+    /* Cards */
     .card {
       background: white;
       border-radius: 12px;
@@ -23,35 +27,79 @@
       margin-bottom: 16px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    h1 { font-size: 24px; color: #1f2937; margin-bottom: 16px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .header-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+    
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    h1 { font-size: 24px; color: #1f2937; }
+    
+    .header-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    /* Buttons */
     .btn {
-      padding: 8px 16px;
+      padding: 10px 16px;
       color: white;
       border: none;
       border-radius: 8px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
+      transition: opacity 0.2s;
     }
+    
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-refresh { background: #6366f1; }
     .btn-sync { background: #10b981; }
     .btn-add { background: #8b5cf6; }
-    .btn:hover { opacity: 0.9; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-edit { background: #6366f1; color: white; font-size: 13px; padding: 8px 14px; }
+    .btn-delete { background: #dc2626; color: white; font-size: 13px; padding: 8px 14px; }
     
+    /* Cost Base Row */
+    .cost-base {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .cost-base-label {
+      font-size: 14px;
+      color: #6b7280;
+      font-weight: 600;
+    }
+    
+    .cost-base-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #1f2937;
+    }
+    
+    /* Two Column Layout */
     .two-column {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
-      margin-bottom: 16px;
     }
+    
     .column {
       background: #f9fafb;
       border-radius: 8px;
       padding: 16px;
     }
+    
     .column-title {
       font-size: 16px;
       font-weight: bold;
@@ -60,29 +108,109 @@
       padding-bottom: 8px;
       border-bottom: 2px solid #e5e7eb;
     }
+    
+    /* Metrics */
     .metric { margin-bottom: 12px; }
-    .metric-label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
-    .metric-value { font-size: 18px; font-weight: bold; color: #1f2937; }
-    .metric-value.green { color: #16a34a; }
-    .metric-value.red { color: #dc2626; }
-    .breakdown {
-      margin-left: 12px;
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid #e5e7eb;
-    }
-    .breakdown-item {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
+    
+    .metric-label {
+      font-size: 11px;
       color: #6b7280;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .metric-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #1f2937;
+    }
+    
+    .metric-pct {
+      font-size: 14px;
       margin-top: 4px;
     }
-    .breakdown-value { font-weight: 600; color: #1f2937; }
-    .breakdown-value.green { color: #16a34a; }
-    .breakdown-value.red { color: #dc2626; }
-    .breakdown-value.blue { color: #2563eb; }
     
+    .green { color: #16a34a; }
+    .red { color: #dc2626; }
+    .blue { color: #2563eb; }
+    
+    /* Breakdown */
+    .breakdown {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+    }
+    
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+    
+    .breakdown-label { font-weight: 500; }
+    
+    .breakdown-value {
+      font-weight: 600;
+      color: #1f2937;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    
+    .breakdown-pct {
+      font-size: 11px;
+      font-style: italic;
+    }
+    
+    /* Sub-breakdown (dividends/franking) */
+    .sub-breakdown {
+      margin-left: 16px;
+      margin-top: 4px;
+    }
+    
+    .sub-breakdown .breakdown-row {
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+    
+    .sub-breakdown .breakdown-value {
+      font-size: 11px;
+    }
+    
+    .sub-breakdown .breakdown-pct {
+      font-size: 10px;
+    }
+    
+    /* Index comparison */
+    .index-section {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #d1d5db;
+    }
+    
+    .index-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+    
+    .index-label {
+      color: #6b7280;
+      font-weight: 500;
+    }
+    
+    .index-value {
+      font-weight: 600;
+      font-size: 13px;
+    }
+    
+    /* Stock Cards */
     .stock {
       background: white;
       border-radius: 12px;
@@ -90,6 +218,7 @@
       margin-bottom: 12px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+    
     .stock-header {
       display: flex;
       justify-content: space-between;
@@ -97,59 +226,91 @@
       padding-bottom: 12px;
       border-bottom: 1px solid #e5e7eb;
     }
-    .stock-code { font-size: 18px; font-weight: bold; color: #1f2937; }
-    .stock-qty { font-size: 13px; color: #6b7280; margin-top: 4px; }
-    .stock-price-label { font-size: 11px; color: #6b7280; text-align: right; }
-    .stock-price-value { font-size: 14px; font-weight: 600; color: #1f2937; text-align: right; }
     
-    .stock-actions {
+    .stock-info { }
+    .stock-code { font-size: 18px; font-weight: bold; color: #1f2937; }
+    .stock-qty { font-size: 12px; color: #6b7280; margin-top: 4px; }
+    
+    .stock-current { text-align: right; }
+    .stock-price-label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+    .stock-price-value { font-size: 16px; font-weight: bold; color: #1f2937; }
+    
+    .stock-cost-base {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
       display: flex;
-      gap: 8px;
-      margin-top: 12px;
-      padding-top: 12px;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .stock-cost-base .cost-base-label { font-size: 13px; }
+    .stock-cost-base .cost-base-value { font-size: 16px; }
+    
+    /* Dividend List */
+    .dividend-list {
+      margin-top: 16px;
+      padding-top: 16px;
       border-top: 1px solid #e5e7eb;
     }
-    .btn-small {
-      padding: 4px 12px;
+    
+    .dividend-item {
+      display: grid;
+      grid-template-columns: auto auto 1fr;
+      gap: 12px;
+      align-items: center;
       font-size: 12px;
-      border: none;
-      border-radius: 6px;
+      color: #6b7280;
+      padding: 6px 0;
+    }
+    
+    .dividend-date { color: #1f2937; font-weight: 600; }
+    
+    .dividend-franking {
+      text-align: right;
+      font-size: 11px;
+      color: #6366f1;
       cursor: pointer;
       font-weight: 600;
     }
-    .btn-edit { background: #6366f1; color: white; }
-    .btn-delete { background: #dc2626; color: white; }
     
-    .status { font-size: 12px; color: #6b7280; margin-top: 8px; }
+    .dividend-franking:hover { text-decoration: underline; }
     
+    /* Stock Actions */
+    .stock-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #e5e7eb;
+    }
+    
+    /* Empty State */
     .empty-state {
       text-align: center;
       padding: 40px 20px;
       color: #6b7280;
     }
+    
     .empty-state h2 {
       font-size: 18px;
       margin-bottom: 8px;
       color: #1f2937;
     }
+    
     .empty-state p {
       font-size: 14px;
       margin-bottom: 16px;
     }
     
-    .dividend-list {
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid #e5e7eb;
-    }
-    .dividend-item {
+    /* Status */
+    .status {
       font-size: 12px;
       color: #6b7280;
-      padding: 4px 0;
-      display: flex;
-      justify-content: space-between;
+      margin-top: 8px;
+      text-align: center;
     }
-    .dividend-date { color: #1f2937; font-weight: 600; }
     
     /* Modal */
     .modal {
@@ -161,156 +322,164 @@
       height: 100%;
       background: rgba(0,0,0,0.5);
       z-index: 1000;
-      justify-content: center;
       align-items: center;
-      padding: 16px;
+      justify-content: center;
     }
-    .modal.show { display: flex; }
+    
+    .modal.active { display: flex; }
+    
     .modal-content {
       background: white;
       border-radius: 12px;
       padding: 24px;
-      width: 100%;
+      width: 90%;
       max-width: 400px;
+      max-height: 90vh;
+      overflow-y: auto;
     }
-    .modal-content h2 { margin-bottom: 16px; font-size: 20px; }
-    .form-group { margin-bottom: 12px; }
+    
+    .modal-content h2 {
+      font-size: 20px;
+      color: #1f2937;
+      margin-bottom: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
     .form-group label {
       display: block;
       font-size: 13px;
-      color: #4b5563;
-      margin-bottom: 4px;
       font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
     }
+    
     .form-group input {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       border: 1px solid #d1d5db;
       border-radius: 6px;
       font-size: 14px;
     }
+    
     .form-buttons {
       display: flex;
       gap: 8px;
-      margin-top: 16px;
+      margin-top: 20px;
     }
+    
     .form-buttons button {
       flex: 1;
-      padding: 10px;
+      padding: 12px;
       border: none;
       border-radius: 6px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
     }
+    
     .btn-save { background: #6366f1; color: white; }
     .btn-cancel { background: #e5e7eb; color: #4b5563; }
     
+    /* Mobile Responsive */
     @media (max-width: 640px) {
       body { padding: 12px; }
       .card { padding: 16px; }
       
       /* Header */
-      .header { flex-direction: column; align-items: stretch; gap: 12px; }
-      .header h1 { text-align: center; font-size: 22px; }
-      .header-buttons { justify-content: center; }
-      .btn { 
-        padding: 12px 16px; 
-        font-size: 13px;
-        min-height: 44px; /* iOS touch target minimum */
-      }
-      .stock-buttons { gap: 6px; }
-      .stock-buttons button {
-        padding: 8px 12px;
-        min-height: 40px;
+      .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
       }
       
-      /* Two-column layout - stack vertically on mobile */
+      h1 {
+        text-align: center;
+        font-size: 22px;
+      }
+      
+      .header-buttons {
+        justify-content: center;
+      }
+      
+      .btn {
+        padding: 12px 16px;
+        font-size: 13px;
+        min-height: 44px;
+      }
+      
+      /* Cost Base */
+      .cost-base {
+        padding: 12px;
+      }
+      
+      .cost-base-label { font-size: 12px; }
+      .cost-base-value { font-size: 18px; }
+      
+      /* Two Column - Stack Vertically */
       .two-column {
         grid-template-columns: 1fr;
         gap: 12px;
       }
       
-      /* Columns */
-      .column { padding: 12px; }
-      .column-title { font-size: 14px; margin-bottom: 10px; }
+      .column {
+        padding: 12px;
+      }
+      
+      .column-title {
+        font-size: 14px;
+      }
       
       /* Metrics */
-      .metric-label { font-size: 10px; }
       .metric-value { font-size: 16px; }
-      .metric-value + div[style*="font-size: 14px"] {
-        font-size: 12px !important;
-      }
+      .metric-pct { font-size: 12px; }
       
       /* Breakdown */
-      .breakdown { margin-left: 8px; margin-top: 6px; padding-top: 6px; }
-      .breakdown-item { 
-        font-size: 11px; 
-        margin-top: 3px;
-        gap: 8px;
-      }
-      .breakdown-item span:first-child { max-width: 60%; }
-      .breakdown-item > span:last-child {
-        text-align: right;
-        white-space: nowrap;
-      }
+      .breakdown-row { font-size: 11px; }
+      .breakdown-pct { font-size: 10px; }
+      .sub-breakdown .breakdown-row { font-size: 10px; }
+      .sub-breakdown .breakdown-pct { font-size: 9px; }
       
-      /* Ensure percentages don't break awkwardly */
-      .breakdown-value {
-        display: inline-flex;
-        align-items: baseline;
-        gap: 3px;
-        flex-wrap: wrap;
-      }
+      /* Index */
+      .index-row { font-size: 11px; }
+      .index-value { font-size: 12px; }
       
-      /* Cost base row on mobile */
-      .card > div[style*="background: #f9fafb"] {
-        padding: 12px !important;
-        margin-bottom: 12px !important;
-      }
-      .card > div[style*="background: #f9fafb"] span {
-        font-size: 12px !important;
-      }
-      .card > div[style*="background: #f9fafb"] span[style*="font-size: 20px"] {
-        font-size: 18px !important;
-      }
-      .card > div[style*="background: #f9fafb"] span[style*="font-size: 16px"] {
-        font-size: 14px !important;
-      }
-      
-      /* Stock cost base */
-      .stock > div[style*="background: #f9fafb"] span[style*="font-size: 16px"] {
-        font-size: 14px !important;
-      }
-      
-      /* Stock cards */
-      .stock { padding: 14px; margin-bottom: 10px; }
-      .stock-header { margin-bottom: 12px; padding-bottom: 10px; }
+      /* Stock Cards */
+      .stock { padding: 14px; }
       .stock-code { font-size: 16px; }
       .stock-qty { font-size: 11px; }
-      .stock-price-label { font-size: 10px; }
       .stock-price-value { font-size: 14px; }
       
-      /* Dividend list */
-      .dividend-list { margin-top: 12px; padding-top: 12px; }
-      .dividend-item { font-size: 11px; padding: 6px 0; }
+      .stock-cost-base {
+        padding: 10px;
+      }
       
-      /* Status message */
-      .status { font-size: 11px; margin-top: 8px; }
+      .stock-cost-base .cost-base-value { font-size: 14px; }
       
-      /* Modal on mobile */
-      .modal-content { 
+      /* Dividends */
+      .dividend-item {
+        font-size: 10px;
+        gap: 8px;
+      }
+      
+      .dividend-franking { font-size: 10px; }
+      
+      /* Actions */
+      .stock-actions button {
+        padding: 10px 12px;
+        min-height: 40px;
+      }
+      
+      /* Modal */
+      .modal-content {
         width: 95%;
         max-width: 350px;
         padding: 20px;
       }
-      .modal-content h2 { font-size: 18px; }
       
-      /* Empty state */
-      .empty-state { padding: 30px 20px; }
-      .empty-state-icon { font-size: 40px; }
-      .empty-state-text { font-size: 15px; }
-      .empty-state-hint { font-size: 12px; }
+      .modal-content h2 { font-size: 18px; }
     }
   </style>
 </head>
@@ -321,114 +490,129 @@
         <h1>ASX Portfolio</h1>
         <div class="header-buttons">
           <button class="btn btn-add" onclick="openAddModal()">+ Add</button>
-          <button class="btn btn-sync" onclick="syncDividends()" id="syncBtn">⟳ Sync</button>
-          <button class="btn btn-refresh" onclick="refresh()" id="refreshBtn">↻ Refresh</button>
+          <button class="btn btn-sync" id="syncBtn" onclick="syncDividends()">⟳ Sync</button>
+          <button class="btn btn-refresh" id="refreshBtn" onclick="refresh()">↻ Refresh</button>
         </div>
       </div>
       
       <div id="portfolioSummary" style="display: none;">
-        <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 14px; color: #6b7280; font-weight: 600;">Cost Base</span>
-            <span style="font-size: 20px; font-weight: bold; color: #1f2937;" id="portfolioCostBase">$0.00</span>
-          </div>
+        <div class="cost-base">
+          <span class="cost-base-label">Cost Base</span>
+          <span class="cost-base-value" id="portfolioCostBase">$0.00</span>
         </div>
         
         <div class="two-column">
+          <!-- Daily Column -->
           <div class="column">
             <div class="column-title">Daily</div>
+            
             <div class="metric">
               <div class="metric-label">Total Change</div>
               <div class="metric-value" id="dailyTotal">$0.00</div>
-              <div style="font-size: 14px; color: #6b7280; margin-top: 4px;" id="dailyTotalPct"></div>
-              <div class="breakdown">
-                <div class="breakdown-item">
-                  <span>Capital</span>
-                  <span>
-                    <span class="breakdown-value" id="dailyCapital">$0.00</span>
-                    <span style="font-size: 11px; font-style: italic; margin-left: 4px;" id="dailyCapitalPct"></span>
+              <div class="metric-pct" id="dailyTotalPct"></div>
+            </div>
+            
+            <div class="breakdown">
+              <div class="breakdown-row">
+                <span class="breakdown-label">Capital</span>
+                <span class="breakdown-value">
+                  <span id="dailyCapital">$0.00</span>
+                  <span class="breakdown-pct" id="dailyCapitalPct"></span>
+                </span>
+              </div>
+              
+              <div class="breakdown-row">
+                <span class="breakdown-label">Cash</span>
+                <span class="breakdown-value blue">
+                  <span id="dailyCash">$0.00</span>
+                  <span class="breakdown-pct" id="dailyCashPct"></span>
+                </span>
+              </div>
+              
+              <div class="sub-breakdown">
+                <div class="breakdown-row">
+                  <span class="breakdown-label">Dividends</span>
+                  <span class="breakdown-value blue">
+                    <span id="dailyDivs">$0.00</span>
+                    <span class="breakdown-pct" id="dailyDivsPct"></span>
                   </span>
                 </div>
-                <div class="breakdown-item">
-                  <span>Cash</span>
-                  <span>
-                    <span class="breakdown-value blue" id="dailyCash">$0.00</span>
-                    <span style="font-size: 11px; font-style: italic; margin-left: 4px;" id="dailyCashPct"></span>
+                <div class="breakdown-row">
+                  <span class="breakdown-label">Franking</span>
+                  <span class="breakdown-value blue">
+                    <span id="dailyFrank">$0.00</span>
+                    <span class="breakdown-pct" id="dailyFrankPct"></span>
                   </span>
                 </div>
-                <div style="margin-left: 12px; margin-top: 4px;">
-                  <div class="breakdown-item" style="font-size: 11px;">
-                    <span>Dividends</span>
-                    <span>
-                      <span class="breakdown-value" id="dailyDivs">$0.00</span>
-                      <span style="font-size: 10px; font-style: italic; margin-left: 4px;" id="dailyDivsPct"></span>
-                    </span>
-                  </div>
-                  <div class="breakdown-item" style="font-size: 11px;">
-                    <span>Franking</span>
-                    <span>
-                      <span class="breakdown-value" id="dailyFrank">$0.00</span>
-                      <span style="font-size: 10px; font-style: italic; margin-left: 4px;" id="dailyFrankPct"></span>
-                    </span>
-                  </div>
-                </div>
+              </div>
+            </div>
+            
+            <div class="index-section">
+              <div class="index-row">
+                <span class="index-label">ASX 200 Change</span>
+                <span class="index-value" id="indexDaily">...</span>
+              </div>
+              <div class="index-row">
+                <span class="index-label">vs ASX 200</span>
+                <span class="index-value" id="vsIndexDaily">...</span>
               </div>
             </div>
           </div>
           
+          <!-- Life-to-date Column -->
           <div class="column">
             <div class="column-title">Life-to-date</div>
+            
             <div class="metric">
               <div class="metric-label">Total Change</div>
               <div class="metric-value" id="ltdTotal">$0.00</div>
-              <div style="font-size: 14px; color: #6b7280; margin-top: 4px;" id="ltdTotalPct"></div>
-              <div class="breakdown">
-                <div class="breakdown-item">
-                  <span>Capital</span>
-                  <span>
-                    <span class="breakdown-value" id="ltdCapital">$0.00</span>
-                    <span style="font-size: 11px; font-style: italic; margin-left: 4px;" id="ltdCapitalPct"></span>
+              <div class="metric-pct" id="ltdTotalPct"></div>
+            </div>
+            
+            <div class="breakdown">
+              <div class="breakdown-row">
+                <span class="breakdown-label">Capital</span>
+                <span class="breakdown-value">
+                  <span id="ltdCapital">$0.00</span>
+                  <span class="breakdown-pct" id="ltdCapitalPct"></span>
+                </span>
+              </div>
+              
+              <div class="breakdown-row">
+                <span class="breakdown-label">Cash</span>
+                <span class="breakdown-value blue">
+                  <span id="ltdCash">$0.00</span>
+                  <span class="breakdown-pct" id="ltdCashPct"></span>
+                </span>
+              </div>
+              
+              <div class="sub-breakdown">
+                <div class="breakdown-row">
+                  <span class="breakdown-label">Dividends</span>
+                  <span class="breakdown-value blue">
+                    <span id="ltdDivs">$0.00</span>
+                    <span class="breakdown-pct" id="ltdDivsPct"></span>
                   </span>
                 </div>
-                <div class="breakdown-item">
-                  <span>Cash</span>
-                  <span>
-                    <span class="breakdown-value blue" id="ltdCash">$0.00</span>
-                    <span style="font-size: 11px; font-style: italic; margin-left: 4px;" id="ltdCashPct"></span>
+                <div class="breakdown-row">
+                  <span class="breakdown-label">Franking</span>
+                  <span class="breakdown-value blue">
+                    <span id="ltdFrank">$0.00</span>
+                    <span class="breakdown-pct" id="ltdFrankPct"></span>
                   </span>
-                </div>
-                <div style="margin-left: 12px; margin-top: 4px;">
-                  <div class="breakdown-item" style="font-size: 11px;">
-                    <span>Dividends</span>
-                    <span>
-                      <span class="breakdown-value" id="ltdDivs">$0.00</span>
-                      <span style="font-size: 10px; font-style: italic; margin-left: 4px;" id="ltdDivsPct"></span>
-                    </span>
-                  </div>
-                  <div class="breakdown-item" style="font-size: 11px;">
-                    <span>Franking</span>
-                    <span>
-                      <span class="breakdown-value" id="ltdFrank">$0.00</span>
-                      <span style="font-size: 10px; font-style: italic; margin-left: 4px;" id="ltdFrankPct"></span>
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-        
-        <!-- ASX 200 Comparison -->
-        <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin-top: 16px;">
-          <div style="font-size: 14px; font-weight: bold; color: #1f2937; margin-bottom: 12px;">vs ASX 200</div>
-          <div class="two-column" style="gap: 12px;">
-            <div>
-              <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Daily</div>
-              <div style="font-size: 16px; font-weight: bold;" id="vsIndexDaily">...</div>
-            </div>
-            <div>
-              <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Life-to-date</div>
-              <div style="font-size: 16px; font-weight: bold;" id="vsIndexLtd">...</div>
+            
+            <div class="index-section">
+              <div class="index-row">
+                <span class="index-label">ASX 200 Change</span>
+                <span class="index-value" id="indexLtd">...</span>
+              </div>
+              <div class="index-row">
+                <span class="index-label">vs ASX 200</span>
+                <span class="index-value" id="vsIndexLtd">...</span>
+              </div>
             </div>
           </div>
         </div>
@@ -438,6 +622,11 @@
     </div>
     
     <div id="stocks"></div>
+    
+    <div id="emptyState" class="card empty-state">
+      <h2>No Stocks Yet</h2>
+      <p>Click "+ Add" to start building your portfolio</p>
+    </div>
   </div>
 
   <!-- Add/Edit Stock Modal -->
@@ -464,13 +653,15 @@
   </div>
 
   <script>
+    // State
     let portfolio = [];
     let dividends = {};
     let editingIndex = -1;
     let indexCurrentPrice = 0;
     let indexPrevClose = 0;
-    let indexStartPrice = 0; // Price on 2025-11-10
+    let indexStartPrice = 0;
 
+    // Initialize
     window.addEventListener('load', () => {
       loadData();
       render();
@@ -479,6 +670,7 @@
       }
     });
 
+    // Data Management
     function loadData() {
       const saved = localStorage.getItem('asx-portfolio');
       portfolio = saved ? JSON.parse(saved) : [];
@@ -498,14 +690,15 @@
       }
     }
 
+    // Modal Management
     function openAddModal() {
       editingIndex = -1;
       document.getElementById('modalTitle').textContent = 'Add Stock';
       document.getElementById('stockCode').value = '';
+      document.getElementById('stockCode').disabled = false;
       document.getElementById('stockQty').value = '';
       document.getElementById('stockCost').value = '';
-      document.getElementById('stockCode').disabled = false;
-      document.getElementById('stockModal').classList.add('show');
+      document.getElementById('stockModal').classList.add('active');
     }
 
     function openEditModal(index) {
@@ -513,38 +706,47 @@
       const stock = portfolio[index];
       document.getElementById('modalTitle').textContent = 'Edit Stock';
       document.getElementById('stockCode').value = stock.code;
+      document.getElementById('stockCode').disabled = true;
       document.getElementById('stockQty').value = stock.qty;
       document.getElementById('stockCost').value = stock.cost;
-      document.getElementById('stockCode').disabled = true;
-      document.getElementById('stockModal').classList.add('show');
+      document.getElementById('stockModal').classList.add('active');
     }
 
     function closeStockModal() {
-      document.getElementById('stockModal').classList.remove('show');
+      document.getElementById('stockModal').classList.remove('active');
     }
 
     function saveStock() {
       const code = document.getElementById('stockCode').value.toUpperCase().trim();
       const qty = parseInt(document.getElementById('stockQty').value);
       const cost = parseFloat(document.getElementById('stockCost').value);
-
+      
       if (!code || !qty || !cost || qty <= 0 || cost <= 0) {
         alert('Please fill in all fields with valid values');
         return;
       }
-
+      
       if (editingIndex === -1) {
+        // Adding new stock
         const exists = portfolio.some(s => s.code === code);
         if (exists) {
           alert(`${code} is already in your portfolio`);
           return;
         }
-        portfolio.push({ code, qty, cost, price: 0, prevClose: 0 });
+        
+        portfolio.push({
+          code: code,
+          qty: qty,
+          cost: cost,
+          price: 0,
+          prevClose: 0
+        });
       } else {
+        // Editing existing stock
         portfolio[editingIndex].qty = qty;
         portfolio[editingIndex].cost = cost;
       }
-
+      
       saveData();
       closeStockModal();
       render();
@@ -564,6 +766,30 @@
       }
     }
 
+    function editDividendFranking(code, divIndex) {
+      const div = dividends[code][divIndex];
+      const currentFranking = div.franking;
+      
+      const newFranking = prompt(
+        `Edit franking percentage for ${code} dividend on ${div.date}\nAmount: $${div.amount.toFixed(4)}\n\nEnter franking % (0-100):`,
+        currentFranking
+      );
+      
+      if (newFranking === null) return;
+      
+      const frankingNum = parseFloat(newFranking);
+      
+      if (isNaN(frankingNum) || frankingNum < 0 || frankingNum > 100) {
+        alert('Please enter a valid percentage between 0 and 100');
+        return;
+      }
+      
+      dividends[code][divIndex].franking = frankingNum;
+      saveData();
+      render();
+    }
+
+    // Price Fetching
     async function fetchPrice(code) {
       try {
         const timestamp = Date.now();
@@ -581,23 +807,18 @@
         const result = data?.chart?.result?.[0];
         const meta = result?.meta;
         
-        // Get current price
         const price = meta?.regularMarketPrice;
         
-        // Get previous close from indicators.quote.close array
-        // This has the actual closing prices, not the chart reference point
+        // Get previous close from indicators array
         const closes = result?.indicators?.quote?.[0]?.close;
         let prevClose = null;
         
         if (closes && closes.length >= 2) {
-          // Get second-to-last close (most recent previous day)
           prevClose = closes[closes.length - 2];
         } else if (closes && closes.length === 1) {
-          // Fallback to first close if only one available
           prevClose = closes[0];
         }
         
-        // Final fallback to meta fields if close array not available
         if (!prevClose) {
           prevClose = meta?.previousClose || meta?.chartPreviousClose;
         }
@@ -607,10 +828,7 @@
           return null;
         }
         
-        return {
-          price: price,
-          prevClose: prevClose
-        };
+        return { price, prevClose };
       } catch (e) {
         console.error(`${code}:`, e.message);
         return null;
@@ -648,14 +866,13 @@
           if (meta) {
             indexCurrentPrice = meta.regularMarketPrice || 0;
             
-            // Get previous close from indicators.quote.close array
+            // Get previous close from indicators array
             const closes = result?.indicators?.quote?.[0]?.close;
             if (closes && closes.length >= 2) {
               indexPrevClose = closes[closes.length - 2];
             } else if (closes && closes.length === 1) {
               indexPrevClose = closes[0];
             } else {
-              // Fallback to meta fields
               indexPrevClose = meta.previousClose || meta.chartPreviousClose || 0;
             }
           }
@@ -690,7 +907,6 @@
       const results = await Promise.all(promises);
       success = results.filter(r => r).length;
       
-      // Fetch ASX 200 data
       await fetchIndexData();
       
       saveData();
@@ -715,6 +931,7 @@
       updatePrices();
     }
 
+    // Dividend Management
     async function fetchDividends(code) {
       try {
         const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1mo&range=1y&events=div`;
@@ -784,6 +1001,7 @@
       setTimeout(() => status.textContent = '', 3000);
     }
 
+    // Calculations
     function calculateDividends(code, qty) {
       const divs = dividends[code] || [];
       let totalDiv = 0;
@@ -816,19 +1034,33 @@
       return { todayDiv, todayFranking };
     }
 
+    // Formatting
+    function fmt(num) {
+      return new Intl.NumberFormat('en-AU', {
+        style: 'currency',
+        currency: 'AUD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(num);
+    }
+
+    function pct(num, showPlus = true) {
+      const sign = num >= 0 ? (showPlus ? '+' : '') : '';
+      return `(${sign}${num.toFixed(2)}%)`;
+    }
+
+    // Rendering
     function render() {
       if (portfolio.length === 0) {
         document.getElementById('portfolioSummary').style.display = 'none';
-        document.getElementById('stocks').innerHTML = `
-          <div class="card empty-state">
-            <h2>No Stocks Yet</h2>
-            <p>Click "+ Add" to start building your portfolio</p>
-          </div>
-        `;
+        document.getElementById('emptyState').style.display = 'block';
+        document.getElementById('stocks').innerHTML = '';
         return;
       }
       
       document.getElementById('portfolioSummary').style.display = 'block';
+      document.getElementById('emptyState').style.display = 'none';
+      
       renderPortfolio();
       renderStocks();
     }
@@ -860,98 +1092,104 @@
         todayFranking += today.todayFranking;
       }
       
+      // Cost Base
+      document.getElementById('portfolioCostBase').textContent = fmt(totalCost);
+      
+      // Daily calculations
       const dailyCapital = totalValue - totalPrevValue;
       const dailyCash = todayDivs + todayFranking;
       const dailyTotal = dailyCapital + dailyCash;
+      const dailyPct = totalPrevValue > 0 ? (dailyTotal / totalPrevValue) * 100 : 0;
       
-      // Set cost base
-      document.getElementById('portfolioCostBase').textContent = fmt(totalCost);
-      
-      // Daily column
       document.getElementById('dailyTotal').textContent = fmt(dailyTotal);
       document.getElementById('dailyTotal').className = `metric-value ${dailyTotal >= 0 ? 'green' : 'red'}`;
+      document.getElementById('dailyTotalPct').textContent = pct(dailyPct);
+      document.getElementById('dailyTotalPct').className = `metric-pct ${dailyPct >= 0 ? 'green' : 'red'}`;
+      
       document.getElementById('dailyCapital').textContent = fmt(dailyCapital);
-      document.getElementById('dailyCapital').className = `breakdown-value ${dailyCapital >= 0 ? 'green' : 'red'}`;
-      document.getElementById('dailyCash').textContent = fmt(dailyCash);
-      document.getElementById('dailyDivs').textContent = fmt(todayDivs);
-      document.getElementById('dailyFrank').textContent = fmt(todayFranking);
-      
-      // Daily breakdown percentages
+      document.getElementById('dailyCapital').className = dailyCapital >= 0 ? 'green' : 'red';
       const dailyCapitalPct = totalPrevValue > 0 ? (dailyCapital / totalPrevValue) * 100 : 0;
+      document.getElementById('dailyCapitalPct').textContent = pct(dailyCapitalPct);
+      document.getElementById('dailyCapitalPct').className = `breakdown-pct ${dailyCapital >= 0 ? 'green' : 'red'}`;
+      
+      document.getElementById('dailyCash').textContent = fmt(dailyCash);
       const dailyCashPct = totalPrevValue > 0 ? (dailyCash / totalPrevValue) * 100 : 0;
-      document.getElementById('dailyCapitalPct').textContent = `(${dailyCapitalPct >= 0 ? '+' : ''}${dailyCapitalPct.toFixed(2)}%)`;
-      document.getElementById('dailyCapitalPct').style.color = dailyCapital >= 0 ? '#16a34a' : '#dc2626';
-      document.getElementById('dailyCashPct').textContent = dailyCash !== 0 ? `(${dailyCashPct >= 0 ? '+' : ''}${dailyCashPct.toFixed(2)}%)` : '';
-      document.getElementById('dailyCashPct').style.color = '#2563eb';
+      document.getElementById('dailyCashPct').textContent = dailyCash !== 0 ? pct(dailyCashPct) : '';
+      document.getElementById('dailyCashPct').className = 'breakdown-pct blue';
       
+      document.getElementById('dailyDivs').textContent = fmt(todayDivs);
       const dailyDivsPct = totalPrevValue > 0 ? (todayDivs / totalPrevValue) * 100 : 0;
-      const dailyFrankPct = totalPrevValue > 0 ? (todayFranking / totalPrevValue) * 100 : 0;
-      document.getElementById('dailyDivsPct').textContent = todayDivs !== 0 ? `(${dailyDivsPct >= 0 ? '+' : ''}${dailyDivsPct.toFixed(2)}%)` : '';
-      document.getElementById('dailyDivsPct').style.color = '#2563eb';
-      document.getElementById('dailyFrankPct').textContent = todayFranking !== 0 ? `(${dailyFrankPct >= 0 ? '+' : ''}${dailyFrankPct.toFixed(2)}%)` : '';
-      document.getElementById('dailyFrankPct').style.color = '#2563eb';
+      document.getElementById('dailyDivsPct').textContent = todayDivs !== 0 ? pct(dailyDivsPct) : '';
+      document.getElementById('dailyDivsPct').className = 'breakdown-pct blue';
       
-      // Life-to-date column
+      document.getElementById('dailyFrank').textContent = fmt(todayFranking);
+      const dailyFrankPct = totalPrevValue > 0 ? (todayFranking / totalPrevValue) * 100 : 0;
+      document.getElementById('dailyFrankPct').textContent = todayFranking !== 0 ? pct(dailyFrankPct) : '';
+      document.getElementById('dailyFrankPct').className = 'breakdown-pct blue';
+      
+      // Life-to-date calculations
       const ltdCapital = totalValue - totalCost;
       const ltdCash = totalDivs + totalFranking;
       const ltdTotal = ltdCapital + ltdCash;
+      const ltdPct = totalCost > 0 ? (ltdTotal / totalCost) * 100 : 0;
       
       document.getElementById('ltdTotal').textContent = fmt(ltdTotal);
       document.getElementById('ltdTotal').className = `metric-value ${ltdTotal >= 0 ? 'green' : 'red'}`;
+      document.getElementById('ltdTotalPct').textContent = pct(ltdPct);
+      document.getElementById('ltdTotalPct').className = `metric-pct ${ltdPct >= 0 ? 'green' : 'red'}`;
+      
       document.getElementById('ltdCapital').textContent = fmt(ltdCapital);
-      document.getElementById('ltdCapital').className = `breakdown-value ${ltdCapital >= 0 ? 'green' : 'red'}`;
-      document.getElementById('ltdCash').textContent = fmt(ltdCash);
-      document.getElementById('ltdDivs').textContent = fmt(totalDivs);
-      document.getElementById('ltdFrank').textContent = fmt(totalFranking);
-      
-      // Life-to-date breakdown percentages
+      document.getElementById('ltdCapital').className = ltdCapital >= 0 ? 'green' : 'red';
       const ltdCapitalPct = totalCost > 0 ? (ltdCapital / totalCost) * 100 : 0;
+      document.getElementById('ltdCapitalPct').textContent = pct(ltdCapitalPct);
+      document.getElementById('ltdCapitalPct').className = `breakdown-pct ${ltdCapital >= 0 ? 'green' : 'red'}`;
+      
+      document.getElementById('ltdCash').textContent = fmt(ltdCash);
       const ltdCashPct = totalCost > 0 ? (ltdCash / totalCost) * 100 : 0;
-      document.getElementById('ltdCapitalPct').textContent = `(${ltdCapitalPct >= 0 ? '+' : ''}${ltdCapitalPct.toFixed(2)}%)`;
-      document.getElementById('ltdCapitalPct').style.color = ltdCapital >= 0 ? '#16a34a' : '#dc2626';
-      document.getElementById('ltdCashPct').textContent = ltdCash !== 0 ? `(${ltdCashPct >= 0 ? '+' : ''}${ltdCashPct.toFixed(2)}%)` : '';
-      document.getElementById('ltdCashPct').style.color = '#2563eb';
+      document.getElementById('ltdCashPct').textContent = ltdCash !== 0 ? pct(ltdCashPct) : '';
+      document.getElementById('ltdCashPct').className = 'breakdown-pct blue';
       
+      document.getElementById('ltdDivs').textContent = fmt(totalDivs);
       const ltdDivsPct = totalCost > 0 ? (totalDivs / totalCost) * 100 : 0;
+      document.getElementById('ltdDivsPct').textContent = totalDivs !== 0 ? pct(ltdDivsPct) : '';
+      document.getElementById('ltdDivsPct').className = 'breakdown-pct blue';
+      
+      document.getElementById('ltdFrank').textContent = fmt(totalFranking);
       const ltdFrankPct = totalCost > 0 ? (totalFranking / totalCost) * 100 : 0;
-      document.getElementById('ltdDivsPct').textContent = totalDivs !== 0 ? `(${ltdDivsPct >= 0 ? '+' : ''}${ltdDivsPct.toFixed(2)}%)` : '';
-      document.getElementById('ltdDivsPct').style.color = '#2563eb';
-      document.getElementById('ltdFrankPct').textContent = totalFranking !== 0 ? `(${ltdFrankPct >= 0 ? '+' : ''}${ltdFrankPct.toFixed(2)}%)` : '';
-      document.getElementById('ltdFrankPct').style.color = '#2563eb';
+      document.getElementById('ltdFrankPct').textContent = totalFranking !== 0 ? pct(ltdFrankPct) : '';
+      document.getElementById('ltdFrankPct').className = 'breakdown-pct blue';
       
-      // Calculate percentages
-      const dailyPct = totalPrevValue > 0 ? (dailyTotal / totalPrevValue) * 100 : 0;
-      const ltdPct = totalCost > 0 ? (ltdTotal / totalCost) * 100 : 0;
-      
-      document.getElementById('dailyTotalPct').textContent = `(${dailyPct >= 0 ? '+' : ''}${dailyPct.toFixed(2)}%)`;
-      document.getElementById('dailyTotalPct').style.color = dailyPct >= 0 ? '#16a34a' : '#dc2626';
-      
-      document.getElementById('ltdTotalPct').textContent = `(${ltdPct >= 0 ? '+' : ''}${ltdPct.toFixed(2)}%)`;
-      document.getElementById('ltdTotalPct').style.color = ltdPct >= 0 ? '#16a34a' : '#dc2626';
-      
-      // ASX 200 comparison
+      // Index comparison
       if (indexCurrentPrice > 0 && indexPrevClose > 0) {
         const indexDailyChange = ((indexCurrentPrice - indexPrevClose) / indexPrevClose) * 100;
-        const portfolioDailyPct = dailyPct;
-        const vsIndexDaily = portfolioDailyPct - indexDailyChange;
+        const vsIndexDaily = dailyPct - indexDailyChange;
         
-        document.getElementById('vsIndexDaily').textContent = `${vsIndexDaily >= 0 ? '+' : ''}${vsIndexDaily.toFixed(2)}%`;
-        document.getElementById('vsIndexDaily').style.color = vsIndexDaily >= 0 ? '#16a34a' : '#dc2626';
+        document.getElementById('indexDaily').textContent = pct(indexDailyChange);
+        document.getElementById('indexDaily').className = `index-value ${indexDailyChange >= 0 ? 'green' : 'red'}`;
+        
+        document.getElementById('vsIndexDaily').textContent = pct(vsIndexDaily);
+        document.getElementById('vsIndexDaily').className = `index-value ${vsIndexDaily >= 0 ? 'green' : 'red'}`;
       } else {
+        document.getElementById('indexDaily').textContent = '...';
+        document.getElementById('indexDaily').className = 'index-value';
         document.getElementById('vsIndexDaily').textContent = '...';
-        document.getElementById('vsIndexDaily').style.color = '#6b7280';
+        document.getElementById('vsIndexDaily').className = 'index-value';
       }
       
       if (indexCurrentPrice > 0 && indexStartPrice > 0 && totalCost > 0) {
         const indexLtdChange = ((indexCurrentPrice - indexStartPrice) / indexStartPrice) * 100;
-        const portfolioLtdPct = ltdPct;
-        const vsIndexLtd = portfolioLtdPct - indexLtdChange;
+        const vsIndexLtd = ltdPct - indexLtdChange;
         
-        document.getElementById('vsIndexLtd').textContent = `${vsIndexLtd >= 0 ? '+' : ''}${vsIndexLtd.toFixed(2)}%`;
-        document.getElementById('vsIndexLtd').style.color = vsIndexLtd >= 0 ? '#16a34a' : '#dc2626';
+        document.getElementById('indexLtd').textContent = pct(indexLtdChange);
+        document.getElementById('indexLtd').className = `index-value ${indexLtdChange >= 0 ? 'green' : 'red'}`;
+        
+        document.getElementById('vsIndexLtd').textContent = pct(vsIndexLtd);
+        document.getElementById('vsIndexLtd').className = `index-value ${vsIndexLtd >= 0 ? 'green' : 'red'}`;
       } else {
+        document.getElementById('indexLtd').textContent = '...';
+        document.getElementById('indexLtd').className = 'index-value';
         document.getElementById('vsIndexLtd').textContent = '...';
-        document.getElementById('vsIndexLtd').style.color = '#6b7280';
+        document.getElementById('vsIndexLtd').className = 'index-value';
       }
     }
 
@@ -968,14 +1206,12 @@
         const todayDivs = calculateTodaysDividends(stock.code, stock.qty);
         const dailyCash = todayDivs.todayDiv + todayDivs.todayFranking;
         const dailyTotal = dailyCapital + dailyCash;
+        const dailyPct = prevValue > 0 ? (dailyTotal / prevValue) * 100 : 0;
         
         const divs = calculateDividends(stock.code, stock.qty);
         const ltdCapital = value - cost;
         const ltdCash = divs.totalDiv + divs.totalFranking;
         const ltdTotal = ltdCapital + ltdCash;
-        
-        // Calculate percentages
-        const dailyPct = prevValue > 0 ? (dailyTotal / prevValue) * 100 : 0;
         const ltdPct = cost > 0 ? (ltdTotal / cost) * 100 : 0;
         
         const stockDivs = dividends[stock.code] || [];
@@ -983,74 +1219,76 @@
         html += `
           <div class="stock">
             <div class="stock-header">
-              <div>
+              <div class="stock-info">
                 <div class="stock-code">${stock.code}</div>
                 <div class="stock-qty">${stock.qty.toLocaleString()} @ ${fmt(stock.cost)}</div>
               </div>
-              <div>
+              <div class="stock-current">
                 <div class="stock-price-label">Current</div>
                 <div class="stock-price-value">${stock.price > 0 ? fmt(stock.price) : '...'}</div>
               </div>
             </div>
             
-            <div style="background: #f9fafb; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 13px; color: #6b7280; font-weight: 600;">Cost Base</span>
-                <span style="font-size: 16px; font-weight: bold; color: #1f2937;">${fmt(cost)}</span>
-              </div>
+            <div class="stock-cost-base">
+              <span class="cost-base-label">Cost Base</span>
+              <span class="cost-base-value">${fmt(cost)}</span>
             </div>
             
             <div class="two-column">
               <div class="column">
                 <div class="column-title">Daily</div>
+                
                 <div class="metric">
                   <div class="metric-label">Change</div>
                   <div class="metric-value ${stock.price > 0 ? (dailyTotal >= 0 ? 'green' : 'red') : ''}">
                     ${stock.price > 0 ? fmt(dailyTotal) : '...'}
                   </div>
-                  <div style="font-size: 14px; color: ${stock.price > 0 ? (dailyPct >= 0 ? '#16a34a' : '#dc2626') : '#6b7280'}; margin-top: 4px;">
-                    ${stock.price > 0 ? `(${dailyPct >= 0 ? '+' : ''}${dailyPct.toFixed(2)}%)` : ''}
+                  <div class="metric-pct ${stock.price > 0 ? (dailyPct >= 0 ? 'green' : 'red') : ''}">
+                    ${stock.price > 0 ? pct(dailyPct) : ''}
                   </div>
-                  <div class="breakdown">
-                    <div class="breakdown-item">
-                      <span>Capital</span>
-                      <span>
-                        <span class="breakdown-value ${stock.price > 0 ? (dailyCapital >= 0 ? 'green' : 'red') : ''}">
-                          ${stock.price > 0 ? fmt(dailyCapital) : '$0.00'}
-                        </span>
-                        <span style="font-size: 11px; font-style: italic; margin-left: 4px; color: ${stock.price > 0 ? (dailyCapital >= 0 ? '#16a34a' : '#dc2626') : '#6b7280'};">
-                          ${stock.price > 0 && prevValue > 0 ? `(${((dailyCapital / prevValue) * 100) >= 0 ? '+' : ''}${((dailyCapital / prevValue) * 100).toFixed(2)}%)` : ''}
+                </div>
+                
+                <div class="breakdown">
+                  <div class="breakdown-row">
+                    <span class="breakdown-label">Capital</span>
+                    <span class="breakdown-value">
+                      <span class="${stock.price > 0 ? (dailyCapital >= 0 ? 'green' : 'red') : ''}">
+                        ${stock.price > 0 ? fmt(dailyCapital) : '$0.00'}
+                      </span>
+                      <span class="breakdown-pct ${stock.price > 0 ? (dailyCapital >= 0 ? 'green' : 'red') : ''}">
+                        ${stock.price > 0 && prevValue > 0 ? pct((dailyCapital / prevValue) * 100) : ''}
+                      </span>
+                    </span>
+                  </div>
+                  
+                  <div class="breakdown-row">
+                    <span class="breakdown-label">Cash</span>
+                    <span class="breakdown-value blue">
+                      <span>${fmt(dailyCash)}</span>
+                      <span class="breakdown-pct">
+                        ${stock.price > 0 && prevValue > 0 && dailyCash !== 0 ? pct((dailyCash / prevValue) * 100) : ''}
+                      </span>
+                    </span>
+                  </div>
+                  
+                  <div class="sub-breakdown">
+                    <div class="breakdown-row">
+                      <span class="breakdown-label">Dividends</span>
+                      <span class="breakdown-value blue">
+                        <span>${fmt(todayDivs.todayDiv)}</span>
+                        <span class="breakdown-pct">
+                          ${stock.price > 0 && prevValue > 0 && todayDivs.todayDiv !== 0 ? pct((todayDivs.todayDiv / prevValue) * 100) : ''}
                         </span>
                       </span>
                     </div>
-                    <div class="breakdown-item">
-                      <span>Cash</span>
-                      <span>
-                        <span class="breakdown-value ${dailyCash > 0 ? 'blue' : ''}">${fmt(dailyCash)}</span>
-                        <span style="font-size: 11px; font-style: italic; margin-left: 4px; color: #2563eb;">
-                          ${stock.price > 0 && prevValue > 0 && dailyCash !== 0 ? `(${((dailyCash / prevValue) * 100) >= 0 ? '+' : ''}${((dailyCash / prevValue) * 100).toFixed(2)}%)` : ''}
+                    <div class="breakdown-row">
+                      <span class="breakdown-label">Franking</span>
+                      <span class="breakdown-value blue">
+                        <span>${fmt(todayDivs.todayFranking)}</span>
+                        <span class="breakdown-pct">
+                          ${stock.price > 0 && prevValue > 0 && todayDivs.todayFranking !== 0 ? pct((todayDivs.todayFranking / prevValue) * 100) : ''}
                         </span>
                       </span>
-                    </div>
-                    <div style="margin-left: 12px; margin-top: 4px;">
-                      <div class="breakdown-item" style="font-size: 11px;">
-                        <span>Dividends</span>
-                        <span>
-                          <span class="breakdown-value">${fmt(todayDivs.todayDiv)}</span>
-                          <span style="font-size: 10px; font-style: italic; margin-left: 4px; color: #2563eb;">
-                            ${stock.price > 0 && prevValue > 0 && todayDivs.todayDiv !== 0 ? `(${((todayDivs.todayDiv / prevValue) * 100) >= 0 ? '+' : ''}${((todayDivs.todayDiv / prevValue) * 100).toFixed(2)}%)` : ''}
-                          </span>
-                        </span>
-                      </div>
-                      <div class="breakdown-item" style="font-size: 11px;">
-                        <span>Franking</span>
-                        <span>
-                          <span class="breakdown-value">${fmt(todayDivs.todayFranking)}</span>
-                          <span style="font-size: 10px; font-style: italic; margin-left: 4px; color: #2563eb;">
-                            ${stock.price > 0 && prevValue > 0 && todayDivs.todayFranking !== 0 ? `(${((todayDivs.todayFranking / prevValue) * 100) >= 0 ? '+' : ''}${((todayDivs.todayFranking / prevValue) * 100).toFixed(2)}%)` : ''}
-                          </span>
-                        </span>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -1058,54 +1296,58 @@
               
               <div class="column">
                 <div class="column-title">Life-to-date</div>
+                
                 <div class="metric">
                   <div class="metric-label">Change</div>
                   <div class="metric-value ${stock.price > 0 ? (ltdTotal >= 0 ? 'green' : 'red') : ''}">
                     ${stock.price > 0 ? fmt(ltdTotal) : '...'}
                   </div>
-                  <div style="font-size: 14px; color: ${stock.price > 0 ? (ltdPct >= 0 ? '#16a34a' : '#dc2626') : '#6b7280'}; margin-top: 4px;">
-                    ${stock.price > 0 ? `(${ltdPct >= 0 ? '+' : ''}${ltdPct.toFixed(2)}%)` : ''}
+                  <div class="metric-pct ${stock.price > 0 ? (ltdPct >= 0 ? 'green' : 'red') : ''}">
+                    ${stock.price > 0 ? pct(ltdPct) : ''}
                   </div>
-                  <div class="breakdown">
-                    <div class="breakdown-item">
-                      <span>Capital</span>
-                      <span>
-                        <span class="breakdown-value ${stock.price > 0 ? (ltdCapital >= 0 ? 'green' : 'red') : ''}">
-                          ${stock.price > 0 ? fmt(ltdCapital) : '$0.00'}
-                        </span>
-                        <span style="font-size: 11px; font-style: italic; margin-left: 4px; color: ${stock.price > 0 ? (ltdCapital >= 0 ? '#16a34a' : '#dc2626') : '#6b7280'};">
-                          ${stock.price > 0 && cost > 0 ? `(${((ltdCapital / cost) * 100) >= 0 ? '+' : ''}${((ltdCapital / cost) * 100).toFixed(2)}%)` : ''}
+                </div>
+                
+                <div class="breakdown">
+                  <div class="breakdown-row">
+                    <span class="breakdown-label">Capital</span>
+                    <span class="breakdown-value">
+                      <span class="${stock.price > 0 ? (ltdCapital >= 0 ? 'green' : 'red') : ''}">
+                        ${stock.price > 0 ? fmt(ltdCapital) : '$0.00'}
+                      </span>
+                      <span class="breakdown-pct ${stock.price > 0 ? (ltdCapital >= 0 ? 'green' : 'red') : ''}">
+                        ${stock.price > 0 && cost > 0 ? pct((ltdCapital / cost) * 100) : ''}
+                      </span>
+                    </span>
+                  </div>
+                  
+                  <div class="breakdown-row">
+                    <span class="breakdown-label">Cash</span>
+                    <span class="breakdown-value blue">
+                      <span>${fmt(ltdCash)}</span>
+                      <span class="breakdown-pct">
+                        ${cost > 0 && ltdCash !== 0 ? pct((ltdCash / cost) * 100) : ''}
+                      </span>
+                    </span>
+                  </div>
+                  
+                  <div class="sub-breakdown">
+                    <div class="breakdown-row">
+                      <span class="breakdown-label">Dividends</span>
+                      <span class="breakdown-value blue">
+                        <span>${fmt(divs.totalDiv)}</span>
+                        <span class="breakdown-pct">
+                          ${cost > 0 && divs.totalDiv !== 0 ? pct((divs.totalDiv / cost) * 100) : ''}
                         </span>
                       </span>
                     </div>
-                    <div class="breakdown-item">
-                      <span>Cash</span>
-                      <span>
-                        <span class="breakdown-value blue">${fmt(ltdCash)}</span>
-                        <span style="font-size: 11px; font-style: italic; margin-left: 4px; color: #2563eb;">
-                          ${cost > 0 && ltdCash !== 0 ? `(${((ltdCash / cost) * 100) >= 0 ? '+' : ''}${((ltdCash / cost) * 100).toFixed(2)}%)` : ''}
+                    <div class="breakdown-row">
+                      <span class="breakdown-label">Franking</span>
+                      <span class="breakdown-value blue">
+                        <span>${fmt(divs.totalFranking)}</span>
+                        <span class="breakdown-pct">
+                          ${cost > 0 && divs.totalFranking !== 0 ? pct((divs.totalFranking / cost) * 100) : ''}
                         </span>
                       </span>
-                    </div>
-                    <div style="margin-left: 12px; margin-top: 4px;">
-                      <div class="breakdown-item" style="font-size: 11px;">
-                        <span>Dividends</span>
-                        <span>
-                          <span class="breakdown-value">${fmt(divs.totalDiv)}</span>
-                          <span style="font-size: 10px; font-style: italic; margin-left: 4px; color: #2563eb;">
-                            ${cost > 0 && divs.totalDiv !== 0 ? `(${((divs.totalDiv / cost) * 100) >= 0 ? '+' : ''}${((divs.totalDiv / cost) * 100).toFixed(2)}%)` : ''}
-                          </span>
-                        </span>
-                      </div>
-                      <div class="breakdown-item" style="font-size: 11px;">
-                        <span>Franking</span>
-                        <span>
-                          <span class="breakdown-value">${fmt(divs.totalFranking)}</span>
-                          <span style="font-size: 10px; font-style: italic; margin-left: 4px; color: #2563eb;">
-                            ${cost > 0 && divs.totalFranking !== 0 ? `(${((divs.totalFranking / cost) * 100) >= 0 ? '+' : ''}${((divs.totalFranking / cost) * 100).toFixed(2)}%)` : ''}
-                          </span>
-                        </span>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -1114,28 +1356,25 @@
             
             ${stockDivs.length > 0 ? `
               <div class="dividend-list">
-                ${stockDivs.map(d => `
+                ${stockDivs.map((d, idx) => `
                   <div class="dividend-item">
                     <span class="dividend-date">${d.date}</span>
                     <span>$${d.amount.toFixed(4)}</span>
+                    <span class="dividend-franking" onclick="editDividendFranking('${stock.code}', ${idx})" title="Click to edit">${d.franking}% franked</span>
                   </div>
                 `).join('')}
               </div>
             ` : ''}
             
             <div class="stock-actions">
-              <button class="btn-small btn-edit" onclick="openEditModal(${i})">Edit</button>
-              <button class="btn-small btn-delete" onclick="deleteStock(${i})">Delete</button>
+              <button class="btn-edit" onclick="openEditModal(${i})">Edit</button>
+              <button class="btn-delete" onclick="deleteStock(${i})">Delete</button>
             </div>
           </div>
         `;
       }
-
+      
       document.getElementById('stocks').innerHTML = html;
-    }
-
-    function fmt(n) {
-      return '$' + n.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
   </script>
 </body>
