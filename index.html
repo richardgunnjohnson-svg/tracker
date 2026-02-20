@@ -922,14 +922,26 @@
         
         if (!events) return [];
         
-        const startDate = new Date('2025-11-10');
+        const startDateStr = '2025-11-10'; // Ex-div dates from this date onwards
         
         return Object.values(events)
-          .map(d => ({
-            date: new Date(d.date * 1000),
-            amount: d.amount
-          }))
-          .filter(d => d.date >= startDate);
+          .map(d => {
+            // Convert Unix timestamp to Australian date
+            const utcDate = new Date(d.date * 1000);
+            const auDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+            
+            // Format as YYYY-MM-DD in Sydney time
+            const year = auDate.getFullYear();
+            const month = String(auDate.getMonth() + 1).padStart(2, '0');
+            const day = String(auDate.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+            
+            return {
+              dateStr: dateStr,
+              amount: d.amount
+            };
+          })
+          .filter(d => d.dateStr >= startDateStr); // String comparison
       } catch (e) {
         return [];
       }
@@ -952,7 +964,7 @@
         if (!dividends[stock.code]) dividends[stock.code] = [];
         
         for (const apiDiv of apiDivs) {
-          const dateStr = apiDiv.date.toISOString().split('T')[0];
+          const dateStr = apiDiv.dateStr;
           const exists = dividends[stock.code].some(d => d.date === dateStr);
           
           if (!exists) {
@@ -996,7 +1008,14 @@
 
     function calculateTodaysDividends(code, qty) {
       const divs = dividends[code] || [];
-      const today = new Date().toISOString().split('T')[0];
+      
+      // Get today's date in Australian timezone
+      const now = new Date();
+      const auNow = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+      const year = auNow.getFullYear();
+      const month = String(auNow.getMonth() + 1).padStart(2, '0');
+      const day = String(auNow.getDate()).padStart(2, '0');
+      const today = `${year}-${month}-${day}`;
       
       let todayDiv = 0;
       let todayFranking = 0;
