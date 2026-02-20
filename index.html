@@ -659,7 +659,7 @@
     let editingIndex = -1;
     let indexCurrentPrice = 0;
     let indexPrevClose = 0;
-    let indexStartPrice = 0;
+    const indexStartPrice = 8830.90; // ASX 200 close on 2025-11-10
 
     // Initialize
     window.addEventListener('load', () => {
@@ -677,17 +677,11 @@
       
       const savedDivs = localStorage.getItem('asx-dividends');
       dividends = savedDivs ? JSON.parse(savedDivs) : {};
-      
-      const savedIndexStart = localStorage.getItem('asx-index-start');
-      indexStartPrice = savedIndexStart ? parseFloat(savedIndexStart) : 0;
     }
 
     function saveData() {
       localStorage.setItem('asx-portfolio', JSON.stringify(portfolio));
       localStorage.setItem('asx-dividends', JSON.stringify(dividends));
-      if (indexStartPrice > 0) {
-        localStorage.setItem('asx-index-start', indexStartPrice.toString());
-      }
     }
 
     // Modal Management
@@ -837,23 +831,7 @@
 
     async function fetchIndexData() {
       try {
-        const PURCHASE_TIMESTAMP = Math.floor(new Date('2025-11-10').getTime() / 1000);
-        
-        // Get start price if not saved
-        if (!indexStartPrice || indexStartPrice === 0) {
-          const startUrl = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&period1=${PURCHASE_TIMESTAMP}&period2=${PURCHASE_TIMESTAMP + 86400}`;
-          const startRes = await fetch(`https://corsproxy.io/?${encodeURIComponent(startUrl)}`);
-          
-          if (startRes.ok) {
-            const startData = await startRes.json();
-            const closes = startData?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
-            if (closes && closes.length > 0) {
-              indexStartPrice = closes.find(c => c !== null);
-            }
-          }
-        }
-        
-        // Get current and previous close
+        // Get current and previous close only
         const timestamp = Date.now();
         const currentUrl = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=2d&_=${timestamp}`;
         const currentRes = await fetch(`https://corsproxy.io/?${encodeURIComponent(currentUrl)}`, { cache: 'no-store' });
@@ -1176,7 +1154,7 @@
         document.getElementById('vsIndexDaily').className = 'index-value';
       }
       
-      if (indexCurrentPrice > 0 && indexStartPrice > 0 && totalCost > 0) {
+      if (indexCurrentPrice > 0 && totalCost > 0) {
         const indexLtdChange = ((indexCurrentPrice - indexStartPrice) / indexStartPrice) * 100;
         const vsIndexLtd = ltdPct - indexLtdChange;
         
