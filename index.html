@@ -465,40 +465,34 @@
 
     async function fetchPrice(code) {
       try {
-        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1d&range=2d`;
+        const timestamp = Date.now();
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1d&range=2d&_=${timestamp}`;
         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
         
-        console.log(`[${code}] Fetching from:`, proxyUrl);
-        
-        const res = await fetch(proxyUrl);
-        
-        console.log(`[${code}] Response status:`, res.status, res.statusText);
-        console.log(`[${code}] Response headers:`, Object.fromEntries(res.headers.entries()));
+        const res = await fetch(proxyUrl, { cache: 'no-store' });
         
         if (!res.ok) {
-          const errorText = await res.text();
-          console.error(`[${code}] HTTP Error ${res.status}:`, errorText.substring(0, 500));
+          console.error(`${code}: HTTP ${res.status}`);
           return null;
         }
         
         const data = await res.json();
-        console.log(`[${code}] Response data:`, data);
-        
         const meta = data?.chart?.result?.[0]?.meta;
         
-        if (!meta?.regularMarketPrice || !meta?.previousClose) {
-          console.error(`[${code}] Missing price data in response. Meta:`, meta);
+        const price = meta?.regularMarketPrice;
+        const prevClose = meta?.chartPreviousClose || meta?.previousClose;
+        
+        if (!price || !prevClose) {
+          console.error(`${code}: Missing price data`);
           return null;
         }
         
-        console.log(`[${code}] Success! Price: $${meta.regularMarketPrice}, PrevClose: $${meta.previousClose}`);
-        
         return {
-          price: meta.regularMarketPrice,
-          prevClose: meta.previousClose
+          price: price,
+          prevClose: prevClose
         };
       } catch (e) {
-        console.error(`[${code}] Exception:`, e.message, e);
+        console.error(`${code}:`, e.message);
         return null;
       }
     }
@@ -522,8 +516,9 @@
         }
         
         // Get current and previous close
-        const currentUrl = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=2d`;
-        const currentRes = await fetch(`https://corsproxy.io/?${encodeURIComponent(currentUrl)}`);
+        const timestamp = Date.now();
+        const currentUrl = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=2d&_=${timestamp}`;
+        const currentRes = await fetch(`https://corsproxy.io/?${encodeURIComponent(currentUrl)}`, { cache: 'no-store' });
         
         if (currentRes.ok) {
           const currentData = await currentRes.json();
@@ -531,7 +526,7 @@
           
           if (meta) {
             indexCurrentPrice = meta.regularMarketPrice || 0;
-            indexPrevClose = meta.previousClose || 0;
+            indexPrevClose = meta.chartPreviousClose || meta.previousClose || 0;
           }
         }
       } catch (e) {
