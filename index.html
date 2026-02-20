@@ -333,6 +333,25 @@
       text-align: center;
     }
     
+    .market-status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    
+    .market-open {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+    
+    .market-closed {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    
     /* Modal */
     .modal {
       display: none;
@@ -419,6 +438,13 @@
       h1 {
         text-align: center;
         font-size: 22px;
+      }
+      
+      .market-status {
+        display: block;
+        margin: 8px auto 0;
+        font-size: 10px;
+        padding: 3px 8px;
       }
       
       /* Buttons - force single row */
@@ -511,7 +537,10 @@
   <div class="container">
     <div class="card">
       <div class="header">
-        <h1>ASX Portfolio</h1>
+        <h1>
+          ASX Portfolio
+          <span id="marketStatusBadge" class="market-status market-closed">Market Closed</span>
+        </h1>
         <div class="header-buttons">
           <button class="btn btn-add" onclick="openAddModal()">Add</button>
           <button class="btn btn-latest" id="refreshBtn" onclick="refresh()">Latest</button>
@@ -685,10 +714,115 @@
     window.addEventListener('load', () => {
       loadData();
       render();
-      if (portfolio.length > 0) {
-        updatePrices();
+      updateMarketStatus();
+      
+      // Auto-refresh on load if:
+      // 1. Portfolio has stocks, AND
+      // 2. Market is open, AND
+      // 3. (Any stock has zero price OR normal auto-refresh)
+      if (portfolio.length > 0 && isMarketOpen()) {
+        const hasZeroPrices = portfolio.some(s => s.price === 0 || s.prevClose === 0);
+        if (hasZeroPrices) {
+          // Definitely refresh if we have missing prices
+          updatePrices();
+        } else {
+          // Optional: refresh anyway to get latest during market hours
+          updatePrices();
+        }
       }
+      
+      // Check market status every minute
+      setInterval(updateMarketStatus, 60000);
     });
+
+    function isMarketOpen() {
+      // Get current time in Australia/Sydney timezone
+      const now = new Date();
+      const auNow = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+      
+      const day = auNow.getDay(); // 0 = Sunday, 6 = Saturday
+      const hour = auNow.getHours();
+      const minute = auNow.getMinutes();
+      
+      // Weekend check
+      if (day === 0 || day === 6) {
+        return false;
+      }
+      
+      // Trading hours: 10:00 AM - 4:30 PM AEST/AEDT
+      const timeInMinutes = hour * 60 + minute;
+      const marketOpen = 10 * 60; // 10:00 AM
+      const marketClose = 16 * 60 + 30; // 4:30 PM
+      
+      return timeInMinutes >= marketOpen && timeInMinutes < marketClose;
+    }
+
+    function getMarketStatusText() {
+      const now = new Date();
+      const auNow = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+      const day = auNow.getDay();
+      const hour = auNow.getHours();
+      const minute = auNow.getMinutes();
+      
+      if (day === 0 || day === 6) {
+        return 'Market Closed (Weekend)';
+      }
+      
+      const timeInMinutes = hour * 60 + minute;
+      const marketOpen = 10 * 60;
+      const marketClose = 16 * 60 + 30;
+      
+      if (timeInMinutes < marketOpen) {
+        const minsUntilOpen = marketOpen - timeInMinutes;
+        const hoursUntil = Math.floor(minsUntilOpen / 60);
+        const minsUntil = minsUntilOpen % 60;
+        return `Opens in ${hoursUntil}h ${minsUntil}m`;
+      } else if (timeInMinutes >= marketClose) {
+        return 'Market Closed';
+      } else {
+        const minsUntilClose = marketClose - timeInMinutes;
+        const hoursUntil = Math.floor(minsUntilClose / 60);
+        const minsUntil = minsUntilClose % 60;
+        return `Closes in ${hoursUntil}h ${minsUntil}m`;
+      }
+    }
+
+    function updateMarketStatus() {
+      const btn = document.getElementById('refreshBtn');
+      const badge = document.getElementById('marketStatusBadge');
+      const marketOpen = isMarketOpen();
+      
+      // Update button
+      if (!marketOpen) {
+        btn.disabled = true;
+        btn.title = getMarketStatusText();
+      } else {
+        if (portfolio.length > 0) {
+          btn.disabled = false;
+        }
+        btn.title = 'Refresh prices (market open)';
+      }
+      
+      // Update badge
+      if (marketOpen) {
+        badge.textContent = 'Market Open';
+        badge.className = 'market-status market-open';
+      } else {
+        badge.textContent = getMarketStatusText();
+        badge.className = 'market-status market-closed';
+      }
+      
+      // Update status text if not already showing something else
+      const status = document.getElementById('status');
+      if (!status.textContent || status.textContent.startsWith('Market') || status.textContent.startsWith('Opens') || status.textContent.startsWith('Closes')) {
+        if (marketOpen) {
+          status.textContent = '';
+        } else {
+          status.textContent = getMarketStatusText();
+          status.style.color = '#6b7280';
+        }
+      }
+    }
 
     function loadData() {
       const saved = localStorage.getItem('asx-portfolio');
@@ -861,6 +995,18 @@
     async function updatePrices() {
       if (portfolio.length === 0) return;
       
+      // Check if market is open
+      if (!isMarketOpen()) {
+        const status = document.getElementById('status');
+        status.textContent = getMarketStatusText();
+        status.style.color = '#dc2626';
+        setTimeout(() => {
+          status.textContent = getMarketStatusText();
+          status.style.color = '#6b7280';
+        }, 3000);
+        return;
+      }
+      
       const btn = document.getElementById('refreshBtn');
       const status = document.getElementById('status');
       
@@ -895,7 +1041,9 @@
       if (success === portfolio.length) {
         status.textContent = `✓ ${elapsed}s`;
         status.style.color = '#16a34a';
-        setTimeout(() => status.textContent = '', 3000);
+        setTimeout(() => {
+          updateMarketStatus();
+        }, 3000);
       } else {
         status.textContent = `⚠️ ${success}/${portfolio.length}`;
         status.style.color = '#dc2626';
@@ -941,6 +1089,8 @@
     }
 
     async function syncDividends() {
+      // Note: Dividend sync works anytime (not restricted to market hours)
+      // since it fetches historical data, not live prices
       if (portfolio.length === 0) return;
       
       const btn = document.getElementById('syncBtn');
@@ -1056,6 +1206,7 @@
         document.getElementById('portfolioSummary').style.display = 'none';
         document.getElementById('emptyState').style.display = 'block';
         document.getElementById('stocks').innerHTML = '';
+        updateMarketStatus();
         return;
       }
       
@@ -1064,9 +1215,14 @@
       
       renderPortfolio();
       renderStocks();
+      updateMarketStatus();
     }
 
     function renderPortfolio() {
+      // Note: Outside trading hours (weekends, evenings), this displays
+      // the last saved prices from the most recent market close.
+      // This is correct behavior - prices don't change when market is closed.
+      
       let totalCost = 0;
       let totalValue = 0;
       let totalPrevValue = 0;
