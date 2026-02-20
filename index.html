@@ -466,21 +466,39 @@
     async function fetchPrice(code) {
       try {
         const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1d&range=2d`;
-        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
         
-        if (!res.ok) return null;
+        console.log(`[${code}] Fetching from:`, proxyUrl);
+        
+        const res = await fetch(proxyUrl);
+        
+        console.log(`[${code}] Response status:`, res.status, res.statusText);
+        console.log(`[${code}] Response headers:`, Object.fromEntries(res.headers.entries()));
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error(`[${code}] HTTP Error ${res.status}:`, errorText.substring(0, 500));
+          return null;
+        }
         
         const data = await res.json();
+        console.log(`[${code}] Response data:`, data);
+        
         const meta = data?.chart?.result?.[0]?.meta;
         
-        if (!meta?.regularMarketPrice || !meta?.previousClose) return null;
+        if (!meta?.regularMarketPrice || !meta?.previousClose) {
+          console.error(`[${code}] Missing price data in response. Meta:`, meta);
+          return null;
+        }
+        
+        console.log(`[${code}] Success! Price: $${meta.regularMarketPrice}, PrevClose: $${meta.previousClose}`);
         
         return {
           price: meta.regularMarketPrice,
           prevClose: meta.previousClose
         };
       } catch (e) {
-        console.error(`${code}:`, e);
+        console.error(`[${code}] Exception:`, e.message, e);
         return null;
       }
     }
