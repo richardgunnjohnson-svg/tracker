@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASX Portfolio</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#6366f1">
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 100%);
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    h1 { font-size: 24px; color: #1f2937; margin-bottom: 16px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .header-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn {
+      padding: 8px 16px;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-refresh { background: #6366f1; }
+    .btn-sync { background: #10b981; }
+    .btn-add { background: #8b5cf6; }
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+    .column {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .column-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #1f2937;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .metric { margin-bottom: 12px; }
+    .metric-label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+    .metric-value { font-size: 18px; font-weight: bold; color: #1f2937; }
+    .metric-value.green { color: #16a34a; }
+    .metric-value.red { color: #dc2626; }
+    .breakdown {
+      margin-left: 12px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #e5e7eb;
+    }
+    .breakdown-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+    .breakdown-value { font-weight: 600; color: #1f2937; }
+    .breakdown-value.green { color: #16a34a; }
+    .breakdown-value.red { color: #dc2626; }
+    .breakdown-value.blue { color: #2563eb; }
+    
+    .stock {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .stock-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .stock-code { font-size: 18px; font-weight: bold; color: #1f2937; }
+    .stock-qty { font-size: 13px; color: #6b7280; margin-top: 4px; }
+    .stock-price-label { font-size: 11px; color: #6b7280; text-align: right; }
+    .stock-price-value { font-size: 14px; font-weight: 600; color: #1f2937; text-align: right; }
+    
+    .stock-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+    }
+    .btn-small {
+      padding: 4px 12px;
+      font-size: 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-edit { background: #6366f1; color: white; }
+    .btn-delete { background: #dc2626; color: white; }
+    
+    .status { font-size: 12px; color: #6b7280; margin-top: 8px; }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+    }
+    .empty-state h2 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: #1f2937;
+    }
+    .empty-state p {
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    
+    .dividend-list {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+    }
+    .dividend-item {
+      font-size: 12px;
+      color: #6b7280;
+      padding: 4px 0;
+      display: flex;
+      justify-content: space-between;
+    }
+    .dividend-date { color: #1f2937; font-weight: 600; }
+    
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .modal-content h2 { margin-bottom: 16px; font-size: 20px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      color: #4b5563;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .form-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .form-buttons button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-save { background: #6366f1; color: white; }
+    .btn-cancel { background: #e5e7eb; color: #4b5563; }
+    
+    @media (max-width: 640px) {
+      .header { flex-direction: column; align-items: stretch; gap: 12px; }
+      .header h1 { text-align: center; }
+      .header-buttons { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <h1>ASX Portfolio</h1>
+        <div class="header-buttons">
+          <button class="btn btn-add" onclick="openAddModal()">+ Add</button>
+          <button class="btn btn-sync" onclick="syncDividends()" id="syncBtn">⟳ Sync</button>
+          <button class="btn btn-refresh" onclick="refresh()" id="refreshBtn">↻ Refresh</button>
+        </div>
+      </div>
+      
+      <div id="portfolioSummary" style="display: none;">
+        <div class="two-column">
+          <div class="column">
+            <div class="column-title">Daily</div>
+            <div class="metric">
+              <div class="metric-label">Total Change</div>
+              <div class="metric-value" id="dailyTotal">$0.00</div>
+              <div class="breakdown">
+                <div class="breakdown-item">
+                  <span>Capital</span>
+                  <span class="breakdown-value" id="dailyCapital">$0.00</span>
+                </div>
+                <div class="breakdown-item">
+                  <span>Cash</span>
+                  <span class="breakdown-value blue" id="dailyCash">$0.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="column">
+            <div class="column-title">Life-to-date</div>
+            <div class="metric">
+              <div class="metric-label">Total Change</div>
+              <div class="metric-value" id="ltdTotal">$0.00</div>
+              <div class="breakdown">
+                <div class="breakdown-item">
+                  <span>Capital</span>
+                  <span class="breakdown-value" id="ltdCapital">$0.00</span>
+                </div>
+                <div class="breakdown-item">
+                  <span>Cash</span>
+                  <span class="breakdown-value blue" id="ltdCash">$0.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="status" id="status"></div>
+    </div>
+    
+    <div id="stocks"></div>
+  </div>
+
+  <!-- Add/Edit Stock Modal -->
+  <div id="stockModal" class="modal">
+    <div class="modal-content">
+      <h2 id="modalTitle">Add Stock</h2>
+      <div class="form-group">
+        <label>ASX Code</label>
+        <input type="text" id="stockCode" placeholder="e.g. WOW" style="text-transform: uppercase;">
+      </div>
+      <div class="form-group">
+        <label>Quantity</label>
+        <input type="number" id="stockQty" placeholder="e.g. 1000">
+      </div>
+      <div class="form-group">
+        <label>Cost Per Share ($)</label>
+        <input type="number" step="0.000001" id="stockCost" placeholder="e.g. 28.50">
+      </div>
+      <div class="form-buttons">
+        <button class="btn-cancel" onclick="closeStockModal()">Cancel</button>
+        <button class="btn-save" onclick="saveStock()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let portfolio = [];
+    let dividends = {};
+    let editingIndex = -1;
+
+    window.addEventListener('load', () => {
+      loadData();
+      render();
+      if (portfolio.length > 0) {
+        updatePrices();
+      }
+    });
+
+    function loadData() {
+      const saved = localStorage.getItem('asx-portfolio');
+      portfolio = saved ? JSON.parse(saved) : [];
+      
+      const savedDivs = localStorage.getItem('asx-dividends');
+      dividends = savedDivs ? JSON.parse(savedDivs) : {};
+    }
+
+    function saveData() {
+      localStorage.setItem('asx-portfolio', JSON.stringify(portfolio));
+      localStorage.setItem('asx-dividends', JSON.stringify(dividends));
+    }
+
+    function openAddModal() {
+      editingIndex = -1;
+      document.getElementById('modalTitle').textContent = 'Add Stock';
+      document.getElementById('stockCode').value = '';
+      document.getElementById('stockQty').value = '';
+      document.getElementById('stockCost').value = '';
+      document.getElementById('stockCode').disabled = false;
+      document.getElementById('stockModal').classList.add('show');
+    }
+
+    function openEditModal(index) {
+      editingIndex = index;
+      const stock = portfolio[index];
+      document.getElementById('modalTitle').textContent = 'Edit Stock';
+      document.getElementById('stockCode').value = stock.code;
+      document.getElementById('stockQty').value = stock.qty;
+      document.getElementById('stockCost').value = stock.cost;
+      document.getElementById('stockCode').disabled = true;
+      document.getElementById('stockModal').classList.add('show');
+    }
+
+    function closeStockModal() {
+      document.getElementById('stockModal').classList.remove('show');
+    }
+
+    function saveStock() {
+      const code = document.getElementById('stockCode').value.toUpperCase().trim();
+      const qty = parseInt(document.getElementById('stockQty').value);
+      const cost = parseFloat(document.getElementById('stockCost').value);
+
+      if (!code || !qty || !cost || qty <= 0 || cost <= 0) {
+        alert('Please fill in all fields with valid values');
+        return;
+      }
+
+      if (editingIndex === -1) {
+        const exists = portfolio.some(s => s.code === code);
+        if (exists) {
+          alert(`${code} is already in your portfolio`);
+          return;
+        }
+        portfolio.push({ code, qty, cost, price: 0, prevClose: 0 });
+      } else {
+        portfolio[editingIndex].qty = qty;
+        portfolio[editingIndex].cost = cost;
+      }
+
+      saveData();
+      closeStockModal();
+      render();
+      
+      if (portfolio.length === 1) {
+        updatePrices();
+      }
+    }
+
+    function deleteStock(index) {
+      const stock = portfolio[index];
+      if (confirm(`Delete ${stock.code} from portfolio?`)) {
+        portfolio.splice(index, 1);
+        delete dividends[stock.code];
+        saveData();
+        render();
+      }
+    }
+
+    async function fetchPrice(code) {
+      try {
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1d&range=2d`;
+        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+        
+        if (!res.ok) return null;
+        
+        const data = await res.json();
+        const meta = data?.chart?.result?.[0]?.meta;
+        
+        if (!meta?.regularMarketPrice || !meta?.previousClose) return null;
+        
+        return {
+          price: meta.regularMarketPrice,
+          prevClose: meta.previousClose
+        };
+      } catch (e) {
+        console.error(`${code}:`, e);
+        return null;
+      }
+    }
+
+    async function updatePrices() {
+      if (portfolio.length === 0) return;
+      
+      const btn = document.getElementById('refreshBtn');
+      const status = document.getElementById('status');
+      
+      btn.textContent = 'Loading...';
+      btn.disabled = true;
+      
+      const start = Date.now();
+      let success = 0;
+      
+      const promises = portfolio.map(async (stock) => {
+        const data = await fetchPrice(stock.code);
+        if (data) {
+          stock.price = data.price;
+          stock.prevClose = data.prevClose;
+          return true;
+        }
+        return false;
+      });
+      
+      const results = await Promise.all(promises);
+      success = results.filter(r => r).length;
+      
+      saveData();
+      render();
+      
+      const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+      
+      btn.textContent = '↻ Refresh';
+      btn.disabled = false;
+      
+      if (success === portfolio.length) {
+        status.textContent = `✓ Updated in ${elapsed}s`;
+        status.style.color = '#16a34a';
+        setTimeout(() => status.textContent = '', 3000);
+      } else {
+        status.textContent = `⚠️ ${success}/${portfolio.length} updated`;
+        status.style.color = '#dc2626';
+      }
+    }
+
+    function refresh() {
+      updatePrices();
+    }
+
+    async function fetchDividends(code) {
+      try {
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1mo&range=1y&events=div`;
+        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+        
+        if (!res.ok) return [];
+        
+        const data = await res.json();
+        const events = data?.chart?.result?.[0]?.events?.dividends;
+        
+        if (!events) return [];
+        
+        return Object.values(events).map(d => ({
+          date: new Date(d.date * 1000),
+          amount: d.amount
+        }));
+      } catch (e) {
+        return [];
+      }
+    }
+
+    async function syncDividends() {
+      if (portfolio.length === 0) return;
+      
+      const btn = document.getElementById('syncBtn');
+      const status = document.getElementById('status');
+      
+      btn.textContent = 'Syncing...';
+      btn.disabled = true;
+      
+      let newCount = 0;
+      
+      for (const stock of portfolio) {
+        const apiDivs = await fetchDividends(stock.code);
+        
+        if (!dividends[stock.code]) dividends[stock.code] = [];
+        
+        for (const apiDiv of apiDivs) {
+          const dateStr = apiDiv.date.toISOString().split('T')[0];
+          const exists = dividends[stock.code].some(d => d.date === dateStr);
+          
+          if (!exists) {
+            dividends[stock.code].push({
+              date: dateStr,
+              amount: apiDiv.amount,
+              franking: 100
+            });
+            newCount++;
+          }
+        }
+        
+        dividends[stock.code].sort((a, b) => new Date(b.date) - new Date(a.date));
+      }
+      
+      saveData();
+      render();
+      
+      btn.textContent = '⟳ Sync';
+      btn.disabled = false;
+      
+      status.textContent = newCount > 0 ? `✓ Added ${newCount} dividend${newCount > 1 ? 's' : ''}` : `✓ Up to date`;
+      status.style.color = '#16a34a';
+      setTimeout(() => status.textContent = '', 3000);
+    }
+
+    function calculateDividends(code, qty) {
+      const divs = dividends[code] || [];
+      let totalDiv = 0;
+      let totalFranking = 0;
+      
+      for (const d of divs) {
+        const amount = d.amount * qty;
+        totalDiv += amount;
+        totalFranking += amount * (d.franking / 100) * (30 / 70);
+      }
+      
+      return { totalDiv, totalFranking };
+    }
+
+    function calculateTodaysDividends(code, qty) {
+      const divs = dividends[code] || [];
+      const today = new Date().toISOString().split('T')[0];
+      
+      let todayDiv = 0;
+      let todayFranking = 0;
+      
+      for (const d of divs) {
+        if (d.date === today) {
+          const amount = d.amount * qty;
+          todayDiv += amount;
+          todayFranking += amount * (d.franking / 100) * (30 / 70);
+        }
+      }
+      
+      return { todayDiv, todayFranking };
+    }
+
+    function render() {
+      if (portfolio.length === 0) {
+        document.getElementById('portfolioSummary').style.display = 'none';
+        document.getElementById('stocks').innerHTML = `
+          <div class="card empty-state">
+            <h2>No Stocks Yet</h2>
+            <p>Click "+ Add" to start building your portfolio</p>
+          </div>
+        `;
+        return;
+      }
+      
+      document.getElementById('portfolioSummary').style.display = 'block';
+      renderPortfolio();
+      renderStocks();
+    }
+
+    function renderPortfolio() {
+      let totalCost = 0;
+      let totalValue = 0;
+      let totalPrevValue = 0;
+      let totalDivs = 0;
+      let totalFranking = 0;
+      let todayDivs = 0;
+      let todayFranking = 0;
+      
+      for (const stock of portfolio) {
+        const cost = stock.cost * stock.qty;
+        const value = stock.price * stock.qty;
+        const prevValue = stock.prevClose * stock.qty;
+        
+        totalCost += cost;
+        totalValue += value;
+        totalPrevValue += prevValue;
+        
+        const divs = calculateDividends(stock.code, stock.qty);
+        totalDivs += divs.totalDiv;
+        totalFranking += divs.totalFranking;
+        
+        const today = calculateTodaysDividends(stock.code, stock.qty);
+        todayDivs += today.todayDiv;
+        todayFranking += today.todayFranking;
+      }
+      
+      const dailyCapital = totalValue - totalPrevValue;
+      const dailyCash = todayDivs + todayFranking;
+      const dailyTotal = dailyCapital + dailyCash;
+      
+      document.getElementById('dailyTotal').textContent = fmt(dailyTotal);
+      document.getElementById('dailyTotal').className = `metric-value ${dailyTotal >= 0 ? 'green' : 'red'}`;
+      document.getElementById('dailyCapital').textContent = fmt(dailyCapital);
+      document.getElementById('dailyCapital').className = `breakdown-value ${dailyCapital >= 0 ? 'green' : 'red'}`;
+      document.getElementById('dailyCash').textContent = fmt(dailyCash);
+      
+      const ltdCapital = totalValue - totalCost;
+      const ltdCash = totalDivs + totalFranking;
+      const ltdTotal = ltdCapital + ltdCash;
+      
+      document.getElementById('ltdTotal').textContent = fmt(ltdTotal);
+      document.getElementById('ltdTotal').className = `metric-value ${ltdTotal >= 0 ? 'green' : 'red'}`;
+      document.getElementById('ltdCapital').textContent = fmt(ltdCapital);
+      document.getElementById('ltdCapital').className = `breakdown-value ${ltdCapital >= 0 ? 'green' : 'red'}`;
+      document.getElementById('ltdCash').textContent = fmt(ltdCash);
+    }
+
+    function renderStocks() {
+      let html = '';
+      
+      for (let i = 0; i < portfolio.length; i++) {
+        const stock = portfolio[i];
+        const cost = stock.cost * stock.qty;
+        const value = stock.price * stock.qty;
+        const prevValue = stock.prevClose * stock.qty;
+        
+        const dailyCapital = value - prevValue;
+        const todayDivs = calculateTodaysDividends(stock.code, stock.qty);
+        const dailyCash = todayDivs.todayDiv + todayDivs.todayFranking;
+        const dailyTotal = dailyCapital + dailyCash;
+        
+        const divs = calculateDividends(stock.code, stock.qty);
+        const ltdCapital = value - cost;
+        const ltdCash = divs.totalDiv + divs.totalFranking;
+        const ltdTotal = ltdCapital + ltdCash;
+        
+        const stockDivs = dividends[stock.code] || [];
+
+        html += `
+          <div class="stock">
+            <div class="stock-header">
+              <div>
+                <div class="stock-code">${stock.code}</div>
+                <div class="stock-qty">${stock.qty.toLocaleString()} @ ${fmt(stock.cost)}</div>
+              </div>
+              <div>
+                <div class="stock-price-label">Current</div>
+                <div class="stock-price-value">${stock.price > 0 ? fmt(stock.price) : '...'}</div>
+              </div>
+            </div>
+            
+            <div class="two-column">
+              <div class="column">
+                <div class="column-title">Daily</div>
+                <div class="metric">
+                  <div class="metric-label">Change</div>
+                  <div class="metric-value ${stock.price > 0 ? (dailyTotal >= 0 ? 'green' : 'red') : ''}">
+                    ${stock.price > 0 ? fmt(dailyTotal) : '...'}
+                  </div>
+                  <div class="breakdown">
+                    <div class="breakdown-item">
+                      <span>Capital</span>
+                      <span class="breakdown-value ${stock.price > 0 ? (dailyCapital >= 0 ? 'green' : 'red') : ''}">
+                        ${stock.price > 0 ? fmt(dailyCapital) : '$0.00'}
+                      </span>
+                    </div>
+                    <div class="breakdown-item">
+                      <span>Cash</span>
+                      <span class="breakdown-value ${dailyCash > 0 ? 'blue' : ''}">${fmt(dailyCash)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="column">
+                <div class="column-title">Life-to-date</div>
+                <div class="metric">
+                  <div class="metric-label">Change</div>
+                  <div class="metric-value ${stock.price > 0 ? (ltdTotal >= 0 ? 'green' : 'red') : ''}">
+                    ${stock.price > 0 ? fmt(ltdTotal) : '...'}
+                  </div>
+                  <div class="breakdown">
+                    <div class="breakdown-item">
+                      <span>Capital</span>
+                      <span class="breakdown-value ${stock.price > 0 ? (ltdCapital >= 0 ? 'green' : 'red') : ''}">
+                        ${stock.price > 0 ? fmt(ltdCapital) : '$0.00'}
+                      </span>
+                    </div>
+                    <div class="breakdown-item">
+                      <span>Cash</span>
+                      <span class="breakdown-value blue">${fmt(ltdCash)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            ${stockDivs.length > 0 ? `
+              <div class="dividend-list">
+                ${stockDivs.map(d => `
+                  <div class="dividend-item">
+                    <span class="dividend-date">${d.date}</span>
+                    <span>$${d.amount.toFixed(4)}</span>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+            
+            <div class="stock-actions">
+              <button class="btn-small btn-edit" onclick="openEditModal(${i})">Edit</button>
+              <button class="btn-small btn-delete" onclick="deleteStock(${i})">Delete</button>
+            </div>
+          </div>
+        `;
+      }
+
+      document.getElementById('stocks').innerHTML = html;
+    }
+
+    function fmt(n) {
+      return '$' + n.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+  </script>
+</body>
+</html>
