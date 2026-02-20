@@ -492,6 +492,7 @@
           <button class="btn btn-add" onclick="openAddModal()">+ Add</button>
           <button class="btn btn-sync" id="syncBtn" onclick="syncDividends()">⟳ Sync</button>
           <button class="btn btn-refresh" id="refreshBtn" onclick="refresh()">↻ Refresh</button>
+          <button class="btn" style="background: #ef4444; font-size: 12px; padding: 8px 12px;" onclick="clearDividends()" title="Clear all dividend data">Clear Divs</button>
         </div>
       </div>
       
@@ -987,6 +988,21 @@
       btn.disabled = false;
       
       status.textContent = newCount > 0 ? `✓ Added ${newCount} dividend${newCount > 1 ? 's' : ''}` : `✓ Up to date`;
+      status.style.color = '#16a34a';
+      setTimeout(() => status.textContent = '', 3000);
+    }
+
+    function clearDividends() {
+      if (!confirm('Clear all dividend data? You can re-sync afterwards to fetch with correct dates.')) {
+        return;
+      }
+      
+      dividends = {};
+      saveData();
+      render();
+      
+      const status = document.getElementById('status');
+      status.textContent = '✓ Dividends cleared';
       status.style.color = '#16a34a';
       setTimeout(() => status.textContent = '', 3000);
     }
