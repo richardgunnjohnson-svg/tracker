@@ -19,7 +19,6 @@
     
     .container { max-width: 800px; margin: 0 auto; }
     
-    /* Cards */
     .card {
       background: white;
       border-radius: 12px;
@@ -34,19 +33,20 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
+      gap: 16px;
     }
     
-    h1 { font-size: 24px; color: #1f2937; }
+    h1 { font-size: 24px; color: #1f2937; flex-shrink: 0; }
     
     .header-buttons {
       display: flex;
       gap: 8px;
-      flex-wrap: wrap;
+      flex-shrink: 0;
     }
     
     /* Buttons */
     .btn {
-      padding: 10px 16px;
+      padding: 10px 18px;
       color: white;
       border: none;
       border-radius: 8px;
@@ -54,17 +54,40 @@
       font-weight: 600;
       cursor: pointer;
       transition: opacity 0.2s;
+      white-space: nowrap;
     }
     
     .btn:hover { opacity: 0.9; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-refresh { background: #6366f1; }
-    .btn-sync { background: #10b981; }
     .btn-add { background: #8b5cf6; }
-    .btn-edit { background: #6366f1; color: white; font-size: 13px; padding: 8px 14px; }
-    .btn-delete { background: #dc2626; color: white; font-size: 13px; padding: 8px 14px; }
+    .btn-latest { background: #6366f1; }
+    .btn-divs { background: #10b981; }
+    .btn-purge { background: #ef4444; }
     
-    /* Cost Base Row */
+    /* Stock action buttons */
+    .btn-edit { 
+      background: #6366f1; 
+      color: white; 
+      font-size: 13px; 
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    .btn-delete { 
+      background: #dc2626; 
+      color: white; 
+      font-size: 13px; 
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    /* Cost Base */
     .cost-base {
       background: #f9fafb;
       border-radius: 8px;
@@ -166,7 +189,7 @@
       font-style: italic;
     }
     
-    /* Sub-breakdown (dividends/franking) */
+    /* Sub-breakdown */
     .sub-breakdown {
       margin-left: 16px;
       margin-top: 4px;
@@ -227,7 +250,6 @@
       border-bottom: 1px solid #e5e7eb;
     }
     
-    .stock-info { }
     .stock-code { font-size: 18px; font-weight: bold; color: #1f2937; }
     .stock-qty { font-size: 12px; color: #6b7280; margin-top: 4px; }
     
@@ -301,7 +323,6 @@
     
     .empty-state p {
       font-size: 14px;
-      margin-bottom: 16px;
     }
     
     /* Status */
@@ -388,7 +409,7 @@
       body { padding: 12px; }
       .card { padding: 16px; }
       
-      /* Header */
+      /* Header - keep in one row */
       .header {
         flex-direction: column;
         align-items: stretch;
@@ -400,12 +421,15 @@
         font-size: 22px;
       }
       
+      /* Buttons - force single row */
       .header-buttons {
-        justify-content: center;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
       }
       
       .btn {
-        padding: 12px 16px;
+        padding: 12px 8px;
         font-size: 13px;
         min-height: 44px;
       }
@@ -489,10 +513,10 @@
       <div class="header">
         <h1>ASX Portfolio</h1>
         <div class="header-buttons">
-          <button class="btn btn-add" onclick="openAddModal()">+ Add</button>
-          <button class="btn btn-sync" id="syncBtn" onclick="syncDividends()">⟳ Sync</button>
-          <button class="btn btn-refresh" id="refreshBtn" onclick="refresh()">↻ Refresh</button>
-          <button class="btn" style="background: #ef4444; font-size: 12px; padding: 8px 12px;" onclick="clearDividends()" title="Clear all dividend data">Clear Divs</button>
+          <button class="btn btn-add" onclick="openAddModal()">Add</button>
+          <button class="btn btn-latest" id="refreshBtn" onclick="refresh()">Latest</button>
+          <button class="btn btn-divs" id="syncBtn" onclick="syncDividends()">Divs</button>
+          <button class="btn btn-purge" onclick="clearDividends()">Purge</button>
         </div>
       </div>
       
@@ -503,7 +527,6 @@
         </div>
         
         <div class="two-column">
-          <!-- Daily Column -->
           <div class="column">
             <div class="column-title">Daily</div>
             
@@ -560,7 +583,6 @@
             </div>
           </div>
           
-          <!-- Life-to-date Column -->
           <div class="column">
             <div class="column-title">Life-to-date</div>
             
@@ -626,11 +648,10 @@
     
     <div id="emptyState" class="card empty-state">
       <h2>No Stocks Yet</h2>
-      <p>Click "+ Add" to start building your portfolio</p>
+      <p>Click "Add" to start building your portfolio</p>
     </div>
   </div>
 
-  <!-- Add/Edit Stock Modal -->
   <div id="stockModal" class="modal">
     <div class="modal-content">
       <h2 id="modalTitle">Add Stock</h2>
@@ -654,15 +675,13 @@
   </div>
 
   <script>
-    // State
     let portfolio = [];
     let dividends = {};
     let editingIndex = -1;
     let indexCurrentPrice = 0;
     let indexPrevClose = 0;
-    const indexStartPrice = 8830.90; // ASX 200 close on 2025-11-10
+    const indexStartPrice = 8830.90;
 
-    // Initialize
     window.addEventListener('load', () => {
       loadData();
       render();
@@ -671,7 +690,6 @@
       }
     });
 
-    // Data Management
     function loadData() {
       const saved = localStorage.getItem('asx-portfolio');
       portfolio = saved ? JSON.parse(saved) : [];
@@ -685,7 +703,6 @@
       localStorage.setItem('asx-dividends', JSON.stringify(dividends));
     }
 
-    // Modal Management
     function openAddModal() {
       editingIndex = -1;
       document.getElementById('modalTitle').textContent = 'Add Stock';
@@ -722,7 +739,6 @@
       }
       
       if (editingIndex === -1) {
-        // Adding new stock
         const exists = portfolio.some(s => s.code === code);
         if (exists) {
           alert(`${code} is already in your portfolio`);
@@ -737,7 +753,6 @@
           prevClose: 0
         });
       } else {
-        // Editing existing stock
         portfolio[editingIndex].qty = qty;
         portfolio[editingIndex].cost = cost;
       }
@@ -763,17 +778,14 @@
 
     function editDividendFranking(code, divIndex) {
       const div = dividends[code][divIndex];
-      const currentFranking = div.franking;
-      
       const newFranking = prompt(
-        `Edit franking percentage for ${code} dividend on ${div.date}\nAmount: $${div.amount.toFixed(4)}\n\nEnter franking % (0-100):`,
-        currentFranking
+        `Edit franking % for ${code} dividend on ${div.date}\nAmount: $${div.amount.toFixed(4)}\n\nEnter franking % (0-100):`,
+        div.franking
       );
       
       if (newFranking === null) return;
       
       const frankingNum = parseFloat(newFranking);
-      
       if (isNaN(frankingNum) || frankingNum < 0 || frankingNum > 100) {
         alert('Please enter a valid percentage between 0 and 100');
         return;
@@ -784,7 +796,6 @@
       render();
     }
 
-    // Price Fetching
     async function fetchPrice(code) {
       try {
         const timestamp = Date.now();
@@ -792,19 +803,13 @@
         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
         
         const res = await fetch(proxyUrl, { cache: 'no-store' });
-        
-        if (!res.ok) {
-          console.error(`${code}: HTTP ${res.status}`);
-          return null;
-        }
+        if (!res.ok) return null;
         
         const data = await res.json();
         const result = data?.chart?.result?.[0];
         const meta = result?.meta;
-        
         const price = meta?.regularMarketPrice;
         
-        // Get previous close from indicators array
         const closes = result?.indicators?.quote?.[0]?.close;
         let prevClose = null;
         
@@ -818,34 +823,28 @@
           prevClose = meta?.previousClose || meta?.chartPreviousClose;
         }
         
-        if (!price || !prevClose) {
-          console.error(`${code}: Missing price data`);
-          return null;
-        }
+        if (!price || !prevClose) return null;
         
         return { price, prevClose };
       } catch (e) {
-        console.error(`${code}:`, e.message);
         return null;
       }
     }
 
     async function fetchIndexData() {
       try {
-        // Get current and previous close only
         const timestamp = Date.now();
-        const currentUrl = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=2d&_=${timestamp}`;
-        const currentRes = await fetch(`https://corsproxy.io/?${encodeURIComponent(currentUrl)}`, { cache: 'no-store' });
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=2d&_=${timestamp}`;
+        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { cache: 'no-store' });
         
-        if (currentRes.ok) {
-          const currentData = await currentRes.json();
-          const result = currentData?.chart?.result?.[0];
+        if (res.ok) {
+          const data = await res.json();
+          const result = data?.chart?.result?.[0];
           const meta = result?.meta;
           
           if (meta) {
             indexCurrentPrice = meta.regularMarketPrice || 0;
             
-            // Get previous close from indicators array
             const closes = result?.indicators?.quote?.[0]?.close;
             if (closes && closes.length >= 2) {
               indexPrevClose = closes[closes.length - 2];
@@ -856,9 +855,7 @@
             }
           }
         }
-      } catch (e) {
-        console.error('Error fetching ASX 200:', e);
-      }
+      } catch (e) {}
     }
 
     async function updatePrices() {
@@ -867,11 +864,10 @@
       const btn = document.getElementById('refreshBtn');
       const status = document.getElementById('status');
       
-      btn.textContent = 'Loading...';
+      btn.textContent = '...';
       btn.disabled = true;
       
       const start = Date.now();
-      let success = 0;
       
       const promises = portfolio.map(async (stock) => {
         const data = await fetchPrice(stock.code);
@@ -884,7 +880,7 @@
       });
       
       const results = await Promise.all(promises);
-      success = results.filter(r => r).length;
+      const success = results.filter(r => r).length;
       
       await fetchIndexData();
       
@@ -893,15 +889,15 @@
       
       const elapsed = ((Date.now() - start) / 1000).toFixed(1);
       
-      btn.textContent = '↻ Refresh';
+      btn.textContent = 'Latest';
       btn.disabled = false;
       
       if (success === portfolio.length) {
-        status.textContent = `✓ Updated in ${elapsed}s`;
+        status.textContent = `✓ ${elapsed}s`;
         status.style.color = '#16a34a';
         setTimeout(() => status.textContent = '', 3000);
       } else {
-        status.textContent = `⚠️ ${success}/${portfolio.length} updated`;
+        status.textContent = `⚠️ ${success}/${portfolio.length}`;
         status.style.color = '#dc2626';
       }
     }
@@ -910,7 +906,6 @@
       updatePrices();
     }
 
-    // Dividend Management
     async function fetchDividends(code) {
       try {
         const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1mo&range=1y&events=div`;
@@ -920,18 +915,15 @@
         
         const data = await res.json();
         const events = data?.chart?.result?.[0]?.events?.dividends;
-        
         if (!events) return [];
         
-        const startDateStr = '2025-11-10'; // Ex-div dates from this date onwards
+        const startDateStr = '2025-11-10';
         
         return Object.values(events)
           .map(d => {
-            // Convert Unix timestamp to Australian date
             const utcDate = new Date(d.date * 1000);
             const auDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
             
-            // Format as YYYY-MM-DD in Sydney time
             const year = auDate.getFullYear();
             const month = String(auDate.getMonth() + 1).padStart(2, '0');
             const day = String(auDate.getDate()).padStart(2, '0');
@@ -942,7 +934,7 @@
               amount: d.amount
             };
           })
-          .filter(d => d.dateStr >= startDateStr); // String comparison
+          .filter(d => d.dateStr >= startDateStr);
       } catch (e) {
         return [];
       }
@@ -954,7 +946,7 @@
       const btn = document.getElementById('syncBtn');
       const status = document.getElementById('status');
       
-      btn.textContent = 'Syncing...';
+      btn.textContent = '...';
       btn.disabled = true;
       
       let newCount = 0;
@@ -984,16 +976,16 @@
       saveData();
       render();
       
-      btn.textContent = '⟳ Sync';
+      btn.textContent = 'Divs';
       btn.disabled = false;
       
-      status.textContent = newCount > 0 ? `✓ Added ${newCount} dividend${newCount > 1 ? 's' : ''}` : `✓ Up to date`;
+      status.textContent = newCount > 0 ? `✓ +${newCount}` : `✓`;
       status.style.color = '#16a34a';
       setTimeout(() => status.textContent = '', 3000);
     }
 
     function clearDividends() {
-      if (!confirm('Clear all dividend data? You can re-sync afterwards to fetch with correct dates.')) {
+      if (!confirm('Clear all dividend data?\n\nYou can re-sync afterwards to fetch with correct Australian dates.')) {
         return;
       }
       
@@ -1002,12 +994,11 @@
       render();
       
       const status = document.getElementById('status');
-      status.textContent = '✓ Dividends cleared';
+      status.textContent = '✓ Cleared';
       status.style.color = '#16a34a';
       setTimeout(() => status.textContent = '', 3000);
     }
 
-    // Calculations
     function calculateDividends(code, qty) {
       const divs = dividends[code] || [];
       let totalDiv = 0;
@@ -1025,7 +1016,6 @@
     function calculateTodaysDividends(code, qty) {
       const divs = dividends[code] || [];
       
-      // Get today's date in Australian timezone
       const now = new Date();
       const auNow = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
       const year = auNow.getFullYear();
@@ -1047,7 +1037,6 @@
       return { todayDiv, todayFranking };
     }
 
-    // Formatting
     function fmt(num) {
       return new Intl.NumberFormat('en-AU', {
         style: 'currency',
@@ -1057,12 +1046,11 @@
       }).format(num);
     }
 
-    function pct(num, showPlus = true) {
-      const sign = num >= 0 ? (showPlus ? '+' : '') : '';
+    function pct(num) {
+      const sign = num >= 0 ? '+' : '';
       return `(${sign}${num.toFixed(2)}%)`;
     }
 
-    // Rendering
     function render() {
       if (portfolio.length === 0) {
         document.getElementById('portfolioSummary').style.display = 'none';
@@ -1105,10 +1093,8 @@
         todayFranking += today.todayFranking;
       }
       
-      // Cost Base
       document.getElementById('portfolioCostBase').textContent = fmt(totalCost);
       
-      // Daily calculations
       const dailyCapital = totalValue - totalPrevValue;
       const dailyCash = todayDivs + todayFranking;
       const dailyTotal = dailyCapital + dailyCash;
@@ -1128,19 +1114,15 @@
       document.getElementById('dailyCash').textContent = fmt(dailyCash);
       const dailyCashPct = totalPrevValue > 0 ? (dailyCash / totalPrevValue) * 100 : 0;
       document.getElementById('dailyCashPct').textContent = dailyCash !== 0 ? pct(dailyCashPct) : '';
-      document.getElementById('dailyCashPct').className = 'breakdown-pct blue';
       
       document.getElementById('dailyDivs').textContent = fmt(todayDivs);
       const dailyDivsPct = totalPrevValue > 0 ? (todayDivs / totalPrevValue) * 100 : 0;
       document.getElementById('dailyDivsPct').textContent = todayDivs !== 0 ? pct(dailyDivsPct) : '';
-      document.getElementById('dailyDivsPct').className = 'breakdown-pct blue';
       
       document.getElementById('dailyFrank').textContent = fmt(todayFranking);
       const dailyFrankPct = totalPrevValue > 0 ? (todayFranking / totalPrevValue) * 100 : 0;
       document.getElementById('dailyFrankPct').textContent = todayFranking !== 0 ? pct(dailyFrankPct) : '';
-      document.getElementById('dailyFrankPct').className = 'breakdown-pct blue';
       
-      // Life-to-date calculations
       const ltdCapital = totalValue - totalCost;
       const ltdCash = totalDivs + totalFranking;
       const ltdTotal = ltdCapital + ltdCash;
@@ -1160,19 +1142,15 @@
       document.getElementById('ltdCash').textContent = fmt(ltdCash);
       const ltdCashPct = totalCost > 0 ? (ltdCash / totalCost) * 100 : 0;
       document.getElementById('ltdCashPct').textContent = ltdCash !== 0 ? pct(ltdCashPct) : '';
-      document.getElementById('ltdCashPct').className = 'breakdown-pct blue';
       
       document.getElementById('ltdDivs').textContent = fmt(totalDivs);
       const ltdDivsPct = totalCost > 0 ? (totalDivs / totalCost) * 100 : 0;
       document.getElementById('ltdDivsPct').textContent = totalDivs !== 0 ? pct(ltdDivsPct) : '';
-      document.getElementById('ltdDivsPct').className = 'breakdown-pct blue';
       
       document.getElementById('ltdFrank').textContent = fmt(totalFranking);
       const ltdFrankPct = totalCost > 0 ? (totalFranking / totalCost) * 100 : 0;
       document.getElementById('ltdFrankPct').textContent = totalFranking !== 0 ? pct(ltdFrankPct) : '';
-      document.getElementById('ltdFrankPct').className = 'breakdown-pct blue';
       
-      // Index comparison
       if (indexCurrentPrice > 0 && indexPrevClose > 0) {
         const indexDailyChange = ((indexCurrentPrice - indexPrevClose) / indexPrevClose) * 100;
         const vsIndexDaily = dailyPct - indexDailyChange;
@@ -1232,7 +1210,7 @@
         html += `
           <div class="stock">
             <div class="stock-header">
-              <div class="stock-info">
+              <div>
                 <div class="stock-code">${stock.code}</div>
                 <div class="stock-qty">${stock.qty.toLocaleString()} @ ${fmt(stock.cost)}</div>
               </div>
@@ -1373,7 +1351,7 @@
                   <div class="dividend-item">
                     <span class="dividend-date">${d.date}</span>
                     <span>$${d.amount.toFixed(4)}</span>
-                    <span class="dividend-franking" onclick="editDividendFranking('${stock.code}', ${idx})" title="Click to edit">${d.franking}% franked</span>
+                    <span class="dividend-franking" onclick="editDividendFranking('${stock.code}', ${idx})">${d.franking}% franked</span>
                   </div>
                 `).join('')}
               </div>
