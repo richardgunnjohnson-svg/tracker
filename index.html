@@ -64,7 +64,6 @@
     .btn-divs { background: #10b981; }
     .btn-purge { background: #ef4444; }
     
-    /* Stock action buttons */
     .btn-edit { 
       background: #6366f1; 
       color: white; 
@@ -157,6 +156,7 @@
     .green { color: #16a34a; }
     .red { color: #dc2626; }
     .blue { color: #2563eb; }
+    .orange { color: #ea580c; }
     
     /* Breakdown */
     .breakdown {
@@ -352,6 +352,22 @@
       color: #dc2626;
     }
     
+    /* Alert banner */
+    .alert {
+      background: #fef3c7;
+      border: 1px solid #fbbf24;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #92400e;
+    }
+    
+    .alert-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
     /* Modal */
     .modal {
       display: none;
@@ -428,7 +444,6 @@
       body { padding: 12px; }
       .card { padding: 16px; }
       
-      /* Header - keep in one row */
       .header {
         flex-direction: column;
         align-items: stretch;
@@ -447,7 +462,6 @@
         padding: 3px 8px;
       }
       
-      /* Buttons - force single row */
       .header-buttons {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -460,7 +474,6 @@
         min-height: 44px;
       }
       
-      /* Cost Base */
       .cost-base {
         padding: 12px;
       }
@@ -468,7 +481,6 @@
       .cost-base-label { font-size: 12px; }
       .cost-base-value { font-size: 18px; }
       
-      /* Two Column - Stack Vertically */
       .two-column {
         grid-template-columns: 1fr;
         gap: 12px;
@@ -482,21 +494,17 @@
         font-size: 14px;
       }
       
-      /* Metrics */
       .metric-value { font-size: 16px; }
       .metric-pct { font-size: 12px; }
       
-      /* Breakdown */
       .breakdown-row { font-size: 11px; }
       .breakdown-pct { font-size: 10px; }
       .sub-breakdown .breakdown-row { font-size: 10px; }
       .sub-breakdown .breakdown-pct { font-size: 9px; }
       
-      /* Index */
       .index-row { font-size: 11px; }
       .index-value { font-size: 12px; }
       
-      /* Stock Cards */
       .stock { padding: 14px; }
       .stock-code { font-size: 16px; }
       .stock-qty { font-size: 11px; }
@@ -508,7 +516,6 @@
       
       .stock-cost-base .cost-base-value { font-size: 14px; }
       
-      /* Dividends */
       .dividend-item {
         font-size: 10px;
         gap: 8px;
@@ -516,13 +523,11 @@
       
       .dividend-franking { font-size: 10px; }
       
-      /* Actions */
       .stock-actions button {
         padding: 10px 12px;
         min-height: 40px;
       }
       
-      /* Modal */
       .modal-content {
         width: 95%;
         max-width: 350px;
@@ -548,6 +553,8 @@
           <button class="btn btn-purge" onclick="clearDividends()">Purge</button>
         </div>
       </div>
+      
+      <div id="alertBanner" style="display: none;"></div>
       
       <div id="portfolioSummary" style="display: none;">
         <div class="cost-base">
@@ -704,55 +711,89 @@
   </div>
 
   <script>
+    // ==========================================
+    // DATA STRUCTURE WITH IMMUTABLE CLOSES
+    // ==========================================
+    /*
+    Stock structure:
+    {
+      code: "AGL",
+      qty: 14615,
+      cost: 9.33,
+      currentPrice: 10.60,
+      priceDate: "2025-02-20",
+      dailyCloses: {
+        "2025-02-17": 10.00,  // IMMUTABLE after 4:30 PM
+        "2025-02-20": 10.58   // IMMUTABLE after 4:30 PM
+      }
+    }
+    
+    Index structure:
+    {
+      currentPrice: 9082.40,
+      priceDate: "2025-02-20",
+      dailyCloses: {
+        "2025-02-17": 9050.20,
+        "2025-02-20": 9082.40
+      },
+      startPrice: 8830.90,
+      startDate: "2025-11-10"
+    }
+    */
+
     let portfolio = [];
     let dividends = {};
+    let indexData = {
+      currentPrice: 0,
+      priceDate: null,
+      dailyCloses: {},
+      startPrice: 8830.90,
+      startDate: "2025-11-10"
+    };
     let editingIndex = -1;
-    let indexCurrentPrice = 0;
-    let indexPrevClose = 0;
-    const indexStartPrice = 8830.90;
+    let dataAnomalies = [];
 
-    window.addEventListener('load', () => {
-      loadData();
-      render();
-      updateMarketStatus();
+    // ==========================================
+    // DATE & TIME UTILITIES
+    // ==========================================
+    
+    function getTodayAU() {
+      const now = new Date();
+      const auNow = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+      const year = auNow.getFullYear();
+      const month = String(auNow.getMonth() + 1).padStart(2, '0');
+      const day = String(auNow.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function getPreviousTradingDay(dateStr) {
+      const date = new Date(dateStr + 'T12:00:00');
+      date.setDate(date.getDate() - 1);
       
-      // Auto-refresh on load if:
-      // 1. Portfolio has stocks, AND
-      // 2. Market is open, AND
-      // 3. (Any stock has zero price OR normal auto-refresh)
-      if (portfolio.length > 0 && isMarketOpen()) {
-        const hasZeroPrices = portfolio.some(s => s.price === 0 || s.prevClose === 0);
-        if (hasZeroPrices) {
-          // Definitely refresh if we have missing prices
-          updatePrices();
-        } else {
-          // Optional: refresh anyway to get latest during market hours
-          updatePrices();
-        }
+      // Skip backwards over weekends
+      while (date.getDay() === 0 || date.getDay() === 6) {
+        date.setDate(date.getDate() - 1);
       }
       
-      // Check market status every minute
-      setInterval(updateMarketStatus, 60000);
-    });
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
 
     function isMarketOpen() {
-      // Get current time in Australia/Sydney timezone
       const now = new Date();
       const auNow = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
       
-      const day = auNow.getDay(); // 0 = Sunday, 6 = Saturday
+      const day = auNow.getDay();
       const hour = auNow.getHours();
       const minute = auNow.getMinutes();
       
-      // Weekend check
-      if (day === 0 || day === 6) {
-        return false;
-      }
+      if (day === 0 || day === 6) return false;
       
-      // Trading hours: 10:00 AM - 4:30 PM AEST/AEDT
       const timeInMinutes = hour * 60 + minute;
-      const marketOpen = 10 * 60; // 10:00 AM
-      const marketClose = 16 * 60 + 30; // 4:30 PM
+      const marketOpen = 10 * 60;
+      const marketClose = 16 * 60 + 30;
       
       return timeInMinutes >= marketOpen && timeInMinutes < marketClose;
     }
@@ -787,153 +828,54 @@
       }
     }
 
-    function updateMarketStatus() {
-      const btn = document.getElementById('refreshBtn');
-      const badge = document.getElementById('marketStatusBadge');
-      const marketOpen = isMarketOpen();
-      
-      // Update button
-      if (!marketOpen) {
-        btn.disabled = true;
-        btn.title = getMarketStatusText();
-      } else {
-        if (portfolio.length > 0) {
-          btn.disabled = false;
-        }
-        btn.title = 'Refresh prices (market open)';
-      }
-      
-      // Update badge
-      if (marketOpen) {
-        badge.textContent = 'Market Open';
-        badge.className = 'market-status market-open';
-      } else {
-        badge.textContent = getMarketStatusText();
-        badge.className = 'market-status market-closed';
-      }
-      
-      // Update status text if not already showing something else
-      const status = document.getElementById('status');
-      if (!status.textContent || status.textContent.startsWith('Market') || status.textContent.startsWith('Opens') || status.textContent.startsWith('Closes')) {
-        if (marketOpen) {
-          status.textContent = '';
-        } else {
-          status.textContent = getMarketStatusText();
-          status.style.color = '#6b7280';
-        }
-      }
-    }
+    // ==========================================
+    // DATA PERSISTENCE
+    // ==========================================
 
     function loadData() {
-      const saved = localStorage.getItem('asx-portfolio');
-      portfolio = saved ? JSON.parse(saved) : [];
+      const saved = localStorage.getItem('asx-portfolio-v2');
+      if (saved) {
+        portfolio = JSON.parse(saved);
+      } else {
+        // Migration from old format
+        const oldSaved = localStorage.getItem('asx-portfolio');
+        if (oldSaved) {
+          const oldPortfolio = JSON.parse(oldSaved);
+          portfolio = oldPortfolio.map(stock => ({
+            code: stock.code,
+            qty: stock.qty,
+            cost: stock.cost,
+            currentPrice: stock.price || 0,
+            priceDate: null,
+            dailyCloses: {}
+          }));
+          console.log('Migrated portfolio from old format');
+        }
+      }
       
       const savedDivs = localStorage.getItem('asx-dividends');
       dividends = savedDivs ? JSON.parse(savedDivs) : {};
+      
+      const savedIndex = localStorage.getItem('asx-index-v2');
+      if (savedIndex) {
+        indexData = JSON.parse(savedIndex);
+      }
     }
 
     function saveData() {
-      localStorage.setItem('asx-portfolio', JSON.stringify(portfolio));
+      localStorage.setItem('asx-portfolio-v2', JSON.stringify(portfolio));
       localStorage.setItem('asx-dividends', JSON.stringify(dividends));
+      localStorage.setItem('asx-index-v2', JSON.stringify(indexData));
     }
 
-    function openAddModal() {
-      editingIndex = -1;
-      document.getElementById('modalTitle').textContent = 'Add Stock';
-      document.getElementById('stockCode').value = '';
-      document.getElementById('stockCode').disabled = false;
-      document.getElementById('stockQty').value = '';
-      document.getElementById('stockCost').value = '';
-      document.getElementById('stockModal').classList.add('active');
-    }
-
-    function openEditModal(index) {
-      editingIndex = index;
-      const stock = portfolio[index];
-      document.getElementById('modalTitle').textContent = 'Edit Stock';
-      document.getElementById('stockCode').value = stock.code;
-      document.getElementById('stockCode').disabled = true;
-      document.getElementById('stockQty').value = stock.qty;
-      document.getElementById('stockCost').value = stock.cost;
-      document.getElementById('stockModal').classList.add('active');
-    }
-
-    function closeStockModal() {
-      document.getElementById('stockModal').classList.remove('active');
-    }
-
-    function saveStock() {
-      const code = document.getElementById('stockCode').value.toUpperCase().trim();
-      const qty = parseInt(document.getElementById('stockQty').value);
-      const cost = parseFloat(document.getElementById('stockCost').value);
-      
-      if (!code || !qty || !cost || qty <= 0 || cost <= 0) {
-        alert('Please fill in all fields with valid values');
-        return;
-      }
-      
-      if (editingIndex === -1) {
-        const exists = portfolio.some(s => s.code === code);
-        if (exists) {
-          alert(`${code} is already in your portfolio`);
-          return;
-        }
-        
-        portfolio.push({
-          code: code,
-          qty: qty,
-          cost: cost,
-          price: 0,
-          prevClose: 0
-        });
-      } else {
-        portfolio[editingIndex].qty = qty;
-        portfolio[editingIndex].cost = cost;
-      }
-      
-      saveData();
-      closeStockModal();
-      render();
-      
-      if (portfolio.length === 1) {
-        updatePrices();
-      }
-    }
-
-    function deleteStock(index) {
-      const stock = portfolio[index];
-      if (confirm(`Delete ${stock.code} from portfolio?`)) {
-        portfolio.splice(index, 1);
-        delete dividends[stock.code];
-        saveData();
-        render();
-      }
-    }
-
-    function editDividendFranking(code, divIndex) {
-      const div = dividends[code][divIndex];
-      const newFranking = prompt(
-        `Edit franking % for ${code} dividend on ${div.date}\nAmount: $${div.amount.toFixed(4)}\n\nEnter franking % (0-100):`,
-        div.franking
-      );
-      
-      if (newFranking === null) return;
-      
-      const frankingNum = parseFloat(newFranking);
-      if (isNaN(frankingNum) || frankingNum < 0 || frankingNum > 100) {
-        alert('Please enter a valid percentage between 0 and 100');
-        return;
-      }
-      
-      dividends[code][divIndex].franking = frankingNum;
-      saveData();
-      render();
-    }
+    // ==========================================
+    // PRICE FETCHING WITH VALIDATION
+    // ==========================================
 
     async function fetchPrice(code) {
       try {
         const timestamp = Date.now();
-        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1d&range=2d&_=${timestamp}`;
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1d&range=5d&_=${timestamp}`;
         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
         
         const res = await fetch(proxyUrl, { cache: 'no-store' });
@@ -942,25 +884,37 @@
         const data = await res.json();
         const result = data?.chart?.result?.[0];
         const meta = result?.meta;
-        const price = meta?.regularMarketPrice;
         
+        const currentPrice = meta?.regularMarketPrice;
+        if (!currentPrice) return null;
+        
+        // Get close prices array and timestamps
         const closes = result?.indicators?.quote?.[0]?.close;
-        let prevClose = null;
+        const timestamps = result?.timestamp;
         
-        if (closes && closes.length >= 2) {
-          prevClose = closes[closes.length - 2];
-        } else if (closes && closes.length === 1) {
-          prevClose = closes[0];
+        if (!closes || !timestamps) return null;
+        
+        // Build date-indexed closes
+        const dailyCloses = {};
+        for (let i = 0; i < timestamps.length; i++) {
+          if (closes[i] !== null) {
+            const utcDate = new Date(timestamps[i] * 1000);
+            const auDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+            const year = auDate.getFullYear();
+            const month = String(auDate.getMonth() + 1).padStart(2, '0');
+            const day = String(auDate.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+            dailyCloses[dateStr] = closes[i];
+          }
         }
         
-        if (!prevClose) {
-          prevClose = meta?.previousClose || meta?.chartPreviousClose;
-        }
-        
-        if (!price || !prevClose) return null;
-        
-        return { price, prevClose };
+        return {
+          currentPrice,
+          priceDate: getTodayAU(),
+          dailyCloses
+        };
       } catch (e) {
+        console.error(`${code}:`, e);
         return null;
       }
     }
@@ -968,34 +922,69 @@
     async function fetchIndexData() {
       try {
         const timestamp = Date.now();
-        const url = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=2d&_=${timestamp}`;
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=5d&_=${timestamp}`;
         const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { cache: 'no-store' });
         
-        if (res.ok) {
-          const data = await res.json();
-          const result = data?.chart?.result?.[0];
-          const meta = result?.meta;
-          
-          if (meta) {
-            indexCurrentPrice = meta.regularMarketPrice || 0;
-            
-            const closes = result?.indicators?.quote?.[0]?.close;
-            if (closes && closes.length >= 2) {
-              indexPrevClose = closes[closes.length - 2];
-            } else if (closes && closes.length === 1) {
-              indexPrevClose = closes[0];
-            } else {
-              indexPrevClose = meta.previousClose || meta.chartPreviousClose || 0;
+        if (!res.ok) return;
+        
+        const data = await res.json();
+        const result = data?.chart?.result?.[0];
+        const meta = result?.meta;
+        
+        const currentPrice = meta?.regularMarketPrice;
+        if (!currentPrice) return;
+        
+        const closes = result?.indicators?.quote?.[0]?.close;
+        const timestamps = result?.timestamp;
+        
+        if (!closes || !timestamps) return;
+        
+        const dailyCloses = {};
+        for (let i = 0; i < timestamps.length; i++) {
+          if (closes[i] !== null) {
+            const utcDate = new Date(timestamps[i] * 1000);
+            const auDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+            const year = auDate.getFullYear();
+            const month = String(auDate.getMonth() + 1).padStart(2, '0');
+            const day = String(auDate.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+            dailyCloses[dateStr] = closes[i];
+          }
+        }
+        
+        // Merge with existing closes, but don't overwrite locked ones
+        for (const [date, price] of Object.entries(dailyCloses)) {
+          if (!indexData.dailyCloses[date]) {
+            indexData.dailyCloses[date] = price;
+          } else {
+            // Check for anomaly
+            const existing = indexData.dailyCloses[date];
+            if (Math.abs(existing - price) > 0.01) {
+              console.warn(`ASX 200 close changed for ${date}: ${existing} → ${price}`);
+              dataAnomalies.push({
+                type: 'index_close_changed',
+                date: date,
+                oldPrice: existing,
+                newPrice: price
+              });
             }
           }
         }
-      } catch (e) {}
+        
+        indexData.currentPrice = currentPrice;
+        indexData.priceDate = getTodayAU();
+      } catch (e) {
+        console.error('ASX 200:', e);
+      }
     }
+
+    // ==========================================
+    // PRICE UPDATE WITH VALIDATION
+    // ==========================================
 
     async function updatePrices() {
       if (portfolio.length === 0) return;
       
-      // Check if market is open
       if (!isMarketOpen()) {
         const status = document.getElementById('status');
         status.textContent = getMarketStatusText();
@@ -1012,17 +1001,55 @@
       
       btn.textContent = '...';
       btn.disabled = true;
+      dataAnomalies = [];
       
       const start = Date.now();
+      const today = getTodayAU();
       
-      const promises = portfolio.map(async (stock) => {
+      const promises = portfolio.map(async (stock, index) => {
         const data = await fetchPrice(stock.code);
-        if (data) {
-          stock.price = data.price;
-          stock.prevClose = data.prevClose;
-          return true;
+        if (!data) return false;
+        
+        // Validate: Check if any existing closes changed
+        for (const [date, newPrice] of Object.entries(data.dailyCloses)) {
+          if (stock.dailyCloses[date]) {
+            const oldPrice = stock.dailyCloses[date];
+            if (Math.abs(oldPrice - newPrice) > 0.01) {
+              console.warn(`${stock.code} close changed for ${date}: ${oldPrice} → ${newPrice}`);
+              dataAnomalies.push({
+                type: 'stock_close_changed',
+                code: stock.code,
+                date: date,
+                oldPrice: oldPrice,
+                newPrice: newPrice
+              });
+            }
+          }
         }
-        return false;
+        
+        // Validate: Open(today) should equal Close(yesterday)
+        const yesterday = getPreviousTradingDay(today);
+        if (stock.dailyCloses[yesterday] && data.dailyCloses[today]) {
+          const yesterdayClose = stock.dailyCloses[yesterday];
+          const todayFromData = data.dailyCloses[today];
+          
+          // If market just opened and today's close equals yesterday's close,
+          // that's actually the opening price (which should match)
+          // We can't validate this perfectly without separate open data
+        }
+        
+        // Merge new closes (don't overwrite existing)
+        for (const [date, price] of Object.entries(data.dailyCloses)) {
+          if (!stock.dailyCloses[date]) {
+            stock.dailyCloses[date] = price;
+          }
+        }
+        
+        // Update current price
+        stock.currentPrice = data.currentPrice;
+        stock.priceDate = data.priceDate;
+        
+        return true;
       });
       
       const results = await Promise.all(promises);
@@ -1041,6 +1068,12 @@
       if (success === portfolio.length) {
         status.textContent = `✓ ${elapsed}s`;
         status.style.color = '#16a34a';
+        
+        // Show anomalies if any
+        if (dataAnomalies.length > 0) {
+          showAnomalyAlert();
+        }
+        
         setTimeout(() => {
           updateMarketStatus();
         }, 3000);
@@ -1050,9 +1083,116 @@
       }
     }
 
+    function showAnomalyAlert() {
+      const banner = document.getElementById('alertBanner');
+      let html = '<div class="alert">';
+      html += '<div class="alert-title">⚠️ Data Anomaly Detected</div>';
+      
+      for (const anomaly of dataAnomalies) {
+        if (anomaly.type === 'stock_close_changed') {
+          html += `<div>${anomaly.code} close for ${anomaly.date} changed: $${anomaly.oldPrice.toFixed(2)} → $${anomaly.newPrice.toFixed(2)}</div>`;
+        } else if (anomaly.type === 'index_close_changed') {
+          html += `<div>ASX 200 close for ${anomaly.date} changed: ${anomaly.oldPrice.toFixed(2)} → ${anomaly.newPrice.toFixed(2)}</div>`;
+        }
+      }
+      
+      html += '</div>';
+      banner.innerHTML = html;
+      banner.style.display = 'block';
+      
+      // Auto-hide after 10 seconds
+      setTimeout(() => {
+        banner.style.display = 'none';
+      }, 10000);
+    }
+
     function refresh() {
       updatePrices();
     }
+
+    // ==========================================
+    // MARKET STATUS
+    // ==========================================
+
+    function updateMarketStatus() {
+      const btn = document.getElementById('refreshBtn');
+      const badge = document.getElementById('marketStatusBadge');
+      const marketOpen = isMarketOpen();
+      
+      if (!marketOpen) {
+        btn.disabled = true;
+        btn.title = getMarketStatusText();
+      } else {
+        if (portfolio.length > 0) {
+          btn.disabled = false;
+        }
+        btn.title = 'Refresh prices (market open)';
+      }
+      
+      if (marketOpen) {
+        badge.textContent = 'Market Open';
+        badge.className = 'market-status market-open';
+      } else {
+        badge.textContent = getMarketStatusText();
+        badge.className = 'market-status market-closed';
+      }
+      
+      const status = document.getElementById('status');
+      if (!status.textContent || status.textContent.startsWith('Market') || status.textContent.startsWith('Opens') || status.textContent.startsWith('Closes')) {
+        if (marketOpen) {
+          status.textContent = '';
+        } else {
+          status.textContent = getMarketStatusText();
+          status.style.color = '#6b7280';
+        }
+      }
+    }
+
+    // ==========================================
+    // CALCULATIONS WITH IMMUTABLE CLOSES
+    // ==========================================
+
+    function getStockPrevClose(stock) {
+      const today = getTodayAU();
+      const yesterday = getPreviousTradingDay(today);
+      
+      // If we have yesterday's close, use it
+      if (stock.dailyCloses[yesterday]) {
+        return stock.dailyCloses[yesterday];
+      }
+      
+      // Otherwise, find the most recent close before today
+      const dates = Object.keys(stock.dailyCloses).sort().reverse();
+      for (const date of dates) {
+        if (date < today) {
+          return stock.dailyCloses[date];
+        }
+      }
+      
+      return stock.currentPrice; // Fallback
+    }
+
+    function getIndexPrevClose() {
+      const today = getTodayAU();
+      const yesterday = getPreviousTradingDay(today);
+      
+      if (indexData.dailyCloses[yesterday]) {
+        return indexData.dailyCloses[yesterday];
+      }
+      
+      const dates = Object.keys(indexData.dailyCloses).sort().reverse();
+      for (const date of dates) {
+        if (date < today) {
+          return indexData.dailyCloses[date];
+        }
+      }
+      
+      return indexData.currentPrice;
+    }
+
+    // ==========================================
+    // DIVIDENDS
+    // ==========================================
 
     async function fetchDividends(code) {
       try {
@@ -1089,8 +1229,6 @@
     }
 
     async function syncDividends() {
-      // Note: Dividend sync works anytime (not restricted to market hours)
-      // since it fetches historical data, not live prices
       if (portfolio.length === 0) return;
       
       const btn = document.getElementById('syncBtn');
@@ -1165,13 +1303,7 @@
 
     function calculateTodaysDividends(code, qty) {
       const divs = dividends[code] || [];
-      
-      const now = new Date();
-      const auNow = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
-      const year = auNow.getFullYear();
-      const month = String(auNow.getMonth() + 1).padStart(2, '0');
-      const day = String(auNow.getDate()).padStart(2, '0');
-      const today = `${year}-${month}-${day}`;
+      const today = getTodayAU();
       
       let todayDiv = 0;
       let todayFranking = 0;
@@ -1187,6 +1319,108 @@
       return { todayDiv, todayFranking };
     }
 
+    // ==========================================
+    // MODAL & STOCK MANAGEMENT
+    // ==========================================
+
+    function openAddModal() {
+      editingIndex = -1;
+      document.getElementById('modalTitle').textContent = 'Add Stock';
+      document.getElementById('stockCode').value = '';
+      document.getElementById('stockCode').disabled = false;
+      document.getElementById('stockQty').value = '';
+      document.getElementById('stockCost').value = '';
+      document.getElementById('stockModal').classList.add('active');
+    }
+
+    function openEditModal(index) {
+      editingIndex = index;
+      const stock = portfolio[index];
+      document.getElementById('modalTitle').textContent = 'Edit Stock';
+      document.getElementById('stockCode').value = stock.code;
+      document.getElementById('stockCode').disabled = true;
+      document.getElementById('stockQty').value = stock.qty;
+      document.getElementById('stockCost').value = stock.cost;
+      document.getElementById('stockModal').classList.add('active');
+    }
+
+    function closeStockModal() {
+      document.getElementById('stockModal').classList.remove('active');
+    }
+
+    function saveStock() {
+      const code = document.getElementById('stockCode').value.toUpperCase().trim();
+      const qty = parseInt(document.getElementById('stockQty').value);
+      const cost = parseFloat(document.getElementById('stockCost').value);
+      
+      if (!code || !qty || !cost || qty <= 0 || cost <= 0) {
+        alert('Please fill in all fields with valid values');
+        return;
+      }
+      
+      if (editingIndex === -1) {
+        const exists = portfolio.some(s => s.code === code);
+        if (exists) {
+          alert(`${code} is already in your portfolio`);
+          return;
+        }
+        
+        portfolio.push({
+          code: code,
+          qty: qty,
+          cost: cost,
+          currentPrice: 0,
+          priceDate: null,
+          dailyCloses: {}
+        });
+      } else {
+        portfolio[editingIndex].qty = qty;
+        portfolio[editingIndex].cost = cost;
+      }
+      
+      saveData();
+      closeStockModal();
+      render();
+      
+      if (portfolio.length === 1 && isMarketOpen()) {
+        updatePrices();
+      }
+    }
+
+    function deleteStock(index) {
+      const stock = portfolio[index];
+      if (confirm(`Delete ${stock.code} from portfolio?`)) {
+        portfolio.splice(index, 1);
+        delete dividends[stock.code];
+        saveData();
+        render();
+      }
+    }
+
+    function editDividendFranking(code, divIndex) {
+      const div = dividends[code][divIndex];
+      const newFranking = prompt(
+        `Edit franking % for ${code} dividend on ${div.date}\nAmount: $${div.amount.toFixed(4)}\n\nEnter franking % (0-100):`,
+        div.franking
+      );
+      
+      if (newFranking === null) return;
+      
+      const frankingNum = parseFloat(newFranking);
+      if (isNaN(frankingNum) || frankingNum < 0 || frankingNum > 100) {
+        alert('Please enter a valid percentage between 0 and 100');
+        return;
+      }
+      
+      dividends[code][divIndex].franking = frankingNum;
+      saveData();
+      render();
+    }
+
+    // ==========================================
+    // FORMATTING
+    // ==========================================
+
     function fmt(num) {
       return new Intl.NumberFormat('en-AU', {
         style: 'currency',
@@ -1200,6 +1434,10 @@
       const sign = num >= 0 ? '+' : '';
       return `(${sign}${num.toFixed(2)}%)`;
     }
+
+    // ==========================================
+    // RENDERING
+    // ==========================================
 
     function render() {
       if (portfolio.length === 0) {
@@ -1219,10 +1457,6 @@
     }
 
     function renderPortfolio() {
-      // Note: Outside trading hours (weekends, evenings), this displays
-      // the last saved prices from the most recent market close.
-      // This is correct behavior - prices don't change when market is closed.
-      
       let totalCost = 0;
       let totalValue = 0;
       let totalPrevValue = 0;
@@ -1233,8 +1467,9 @@
       
       for (const stock of portfolio) {
         const cost = stock.cost * stock.qty;
-        const value = stock.price * stock.qty;
-        const prevValue = stock.prevClose * stock.qty;
+        const value = stock.currentPrice * stock.qty;
+        const prevClose = getStockPrevClose(stock);
+        const prevValue = prevClose * stock.qty;
         
         totalCost += cost;
         totalValue += value;
@@ -1307,8 +1542,12 @@
       const ltdFrankPct = totalCost > 0 ? (totalFranking / totalCost) * 100 : 0;
       document.getElementById('ltdFrankPct').textContent = totalFranking !== 0 ? pct(ltdFrankPct) : '';
       
-      if (indexCurrentPrice > 0 && indexPrevClose > 0) {
-        const indexDailyChange = ((indexCurrentPrice - indexPrevClose) / indexPrevClose) * 100;
+      // Index comparison
+      const indexCurrent = indexData.currentPrice;
+      const indexPrev = getIndexPrevClose();
+      
+      if (indexCurrent > 0 && indexPrev > 0) {
+        const indexDailyChange = ((indexCurrent - indexPrev) / indexPrev) * 100;
         const vsIndexDaily = dailyPct - indexDailyChange;
         
         document.getElementById('indexDaily').textContent = pct(indexDailyChange);
@@ -1323,8 +1562,8 @@
         document.getElementById('vsIndexDaily').className = 'index-value';
       }
       
-      if (indexCurrentPrice > 0 && totalCost > 0) {
-        const indexLtdChange = ((indexCurrentPrice - indexStartPrice) / indexStartPrice) * 100;
+      if (indexCurrent > 0 && totalCost > 0) {
+        const indexLtdChange = ((indexCurrent - indexData.startPrice) / indexData.startPrice) * 100;
         const vsIndexLtd = ltdPct - indexLtdChange;
         
         document.getElementById('indexLtd').textContent = pct(indexLtdChange);
@@ -1346,8 +1585,9 @@
       for (let i = 0; i < portfolio.length; i++) {
         const stock = portfolio[i];
         const cost = stock.cost * stock.qty;
-        const value = stock.price * stock.qty;
-        const prevValue = stock.prevClose * stock.qty;
+        const value = stock.currentPrice * stock.qty;
+        const prevClose = getStockPrevClose(stock);
+        const prevValue = prevClose * stock.qty;
         
         const dailyCapital = value - prevValue;
         const todayDivs = calculateTodaysDividends(stock.code, stock.qty);
@@ -1372,7 +1612,7 @@
               </div>
               <div class="stock-current">
                 <div class="stock-price-label">Current</div>
-                <div class="stock-price-value">${stock.price > 0 ? fmt(stock.price) : '...'}</div>
+                <div class="stock-price-value">${stock.currentPrice > 0 ? fmt(stock.currentPrice) : '...'}</div>
               </div>
             </div>
             
@@ -1387,11 +1627,11 @@
                 
                 <div class="metric">
                   <div class="metric-label">Change</div>
-                  <div class="metric-value ${stock.price > 0 ? (dailyTotal >= 0 ? 'green' : 'red') : ''}">
-                    ${stock.price > 0 ? fmt(dailyTotal) : '...'}
+                  <div class="metric-value ${stock.currentPrice > 0 ? (dailyTotal >= 0 ? 'green' : 'red') : ''}">
+                    ${stock.currentPrice > 0 ? fmt(dailyTotal) : '...'}
                   </div>
-                  <div class="metric-pct ${stock.price > 0 ? (dailyPct >= 0 ? 'green' : 'red') : ''}">
-                    ${stock.price > 0 ? pct(dailyPct) : ''}
+                  <div class="metric-pct ${stock.currentPrice > 0 ? (dailyPct >= 0 ? 'green' : 'red') : ''}">
+                    ${stock.currentPrice > 0 ? pct(dailyPct) : ''}
                   </div>
                 </div>
                 
@@ -1399,11 +1639,11 @@
                   <div class="breakdown-row">
                     <span class="breakdown-label">Capital</span>
                     <span class="breakdown-value">
-                      <span class="${stock.price > 0 ? (dailyCapital >= 0 ? 'green' : 'red') : ''}">
-                        ${stock.price > 0 ? fmt(dailyCapital) : '$0.00'}
+                      <span class="${stock.currentPrice > 0 ? (dailyCapital >= 0 ? 'green' : 'red') : ''}">
+                        ${stock.currentPrice > 0 ? fmt(dailyCapital) : '$0.00'}
                       </span>
-                      <span class="breakdown-pct ${stock.price > 0 ? (dailyCapital >= 0 ? 'green' : 'red') : ''}">
-                        ${stock.price > 0 && prevValue > 0 ? pct((dailyCapital / prevValue) * 100) : ''}
+                      <span class="breakdown-pct ${stock.currentPrice > 0 ? (dailyCapital >= 0 ? 'green' : 'red') : ''}">
+                        ${stock.currentPrice > 0 && prevValue > 0 ? pct((dailyCapital / prevValue) * 100) : ''}
                       </span>
                     </span>
                   </div>
@@ -1413,7 +1653,7 @@
                     <span class="breakdown-value blue">
                       <span>${fmt(dailyCash)}</span>
                       <span class="breakdown-pct">
-                        ${stock.price > 0 && prevValue > 0 && dailyCash !== 0 ? pct((dailyCash / prevValue) * 100) : ''}
+                        ${stock.currentPrice > 0 && prevValue > 0 && dailyCash !== 0 ? pct((dailyCash / prevValue) * 100) : ''}
                       </span>
                     </span>
                   </div>
@@ -1424,7 +1664,7 @@
                       <span class="breakdown-value blue">
                         <span>${fmt(todayDivs.todayDiv)}</span>
                         <span class="breakdown-pct">
-                          ${stock.price > 0 && prevValue > 0 && todayDivs.todayDiv !== 0 ? pct((todayDivs.todayDiv / prevValue) * 100) : ''}
+                          ${stock.currentPrice > 0 && prevValue > 0 && todayDivs.todayDiv !== 0 ? pct((todayDivs.todayDiv / prevValue) * 100) : ''}
                         </span>
                       </span>
                     </div>
@@ -1433,7 +1673,7 @@
                       <span class="breakdown-value blue">
                         <span>${fmt(todayDivs.todayFranking)}</span>
                         <span class="breakdown-pct">
-                          ${stock.price > 0 && prevValue > 0 && todayDivs.todayFranking !== 0 ? pct((todayDivs.todayFranking / prevValue) * 100) : ''}
+                          ${stock.currentPrice > 0 && prevValue > 0 && todayDivs.todayFranking !== 0 ? pct((todayDivs.todayFranking / prevValue) * 100) : ''}
                         </span>
                       </span>
                     </div>
@@ -1446,11 +1686,11 @@
                 
                 <div class="metric">
                   <div class="metric-label">Change</div>
-                  <div class="metric-value ${stock.price > 0 ? (ltdTotal >= 0 ? 'green' : 'red') : ''}">
-                    ${stock.price > 0 ? fmt(ltdTotal) : '...'}
+                  <div class="metric-value ${stock.currentPrice > 0 ? (ltdTotal >= 0 ? 'green' : 'red') : ''}">
+                    ${stock.currentPrice > 0 ? fmt(ltdTotal) : '...'}
                   </div>
-                  <div class="metric-pct ${stock.price > 0 ? (ltdPct >= 0 ? 'green' : 'red') : ''}">
-                    ${stock.price > 0 ? pct(ltdPct) : ''}
+                  <div class="metric-pct ${stock.currentPrice > 0 ? (ltdPct >= 0 ? 'green' : 'red') : ''}">
+                    ${stock.currentPrice > 0 ? pct(ltdPct) : ''}
                   </div>
                 </div>
                 
@@ -1458,11 +1698,11 @@
                   <div class="breakdown-row">
                     <span class="breakdown-label">Capital</span>
                     <span class="breakdown-value">
-                      <span class="${stock.price > 0 ? (ltdCapital >= 0 ? 'green' : 'red') : ''}">
-                        ${stock.price > 0 ? fmt(ltdCapital) : '$0.00'}
+                      <span class="${stock.currentPrice > 0 ? (ltdCapital >= 0 ? 'green' : 'red') : ''}">
+                        ${stock.currentPrice > 0 ? fmt(ltdCapital) : '$0.00'}
                       </span>
-                      <span class="breakdown-pct ${stock.price > 0 ? (ltdCapital >= 0 ? 'green' : 'red') : ''}">
-                        ${stock.price > 0 && cost > 0 ? pct((ltdCapital / cost) * 100) : ''}
+                      <span class="breakdown-pct ${stock.currentPrice > 0 ? (ltdCapital >= 0 ? 'green' : 'red') : ''}">
+                        ${stock.currentPrice > 0 && cost > 0 ? pct((ltdCapital / cost) * 100) : ''}
                       </span>
                     </span>
                   </div>
@@ -1523,6 +1763,25 @@
       
       document.getElementById('stocks').innerHTML = html;
     }
+
+    // ==========================================
+    // INITIALIZATION
+    // ==========================================
+
+    window.addEventListener('load', () => {
+      loadData();
+      render();
+      updateMarketStatus();
+      
+      if (portfolio.length > 0 && isMarketOpen()) {
+        const hasZeroPrices = portfolio.some(s => s.currentPrice === 0);
+        if (hasZeroPrices) {
+          updatePrices();
+        }
+      }
+      
+      setInterval(updateMarketStatus, 60000);
+    });
   </script>
 </body>
 </html>
