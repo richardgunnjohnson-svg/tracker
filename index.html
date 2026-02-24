@@ -1089,10 +1089,10 @@
         status.textContent = `✓ ${elapsed}s`;
         status.style.color = '#16a34a';
         
-        // Show anomalies if any
-        if (dataAnomalies.length > 0) {
-          showAnomalyAlert();
-        }
+        // Anomaly detection still runs, just suppressed from UI
+        // if (dataAnomalies.length > 0) {
+        //   showAnomalyAlert();
+        // }
         
         setTimeout(() => {
           updateMarketStatus();
