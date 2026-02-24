@@ -1192,6 +1192,24 @@
       return stock.currentPrice; // Fallback
     }
 
+    function getStockCurrentPrice(stock) {
+      // If price is from today, use it (market is open or was open today)
+      const today = getTodayAU();
+      if (stock.priceDate === today) {
+        return stock.currentPrice;
+      }
+      
+      // Price is stale (from yesterday or earlier)
+      // Before market open, use yesterday's close to avoid false daily changes
+      const yesterday = getPreviousTradingDay(today);
+      if (stock.dailyCloses[yesterday]) {
+        return stock.dailyCloses[yesterday];
+      }
+      
+      // Fallback to stored price
+      return stock.currentPrice;
+    }
+
     function getIndexPrevClose() {
       const today = getTodayAU();
       const yesterday = getPreviousTradingDay(today);
@@ -1205,6 +1223,22 @@
         if (date < today) {
           return indexData.dailyCloses[date];
         }
+      }
+      
+      return indexData.currentPrice;
+    }
+
+    function getIndexCurrentPrice() {
+      // If price is from today, use it
+      const today = getTodayAU();
+      if (indexData.priceDate === today) {
+        return indexData.currentPrice;
+      }
+      
+      // Price is stale - use yesterday's close
+      const yesterday = getPreviousTradingDay(today);
+      if (indexData.dailyCloses[yesterday]) {
+        return indexData.dailyCloses[yesterday];
       }
       
       return indexData.currentPrice;
@@ -1487,7 +1521,8 @@
       
       for (const stock of portfolio) {
         const cost = stock.cost * stock.qty;
-        const value = stock.currentPrice * stock.qty;
+        const currentPrice = getStockCurrentPrice(stock); // Use smart helper
+        const value = currentPrice * stock.qty;
         const prevClose = getStockPrevClose(stock);
         const prevValue = prevClose * stock.qty;
         
@@ -1563,7 +1598,7 @@
       document.getElementById('ltdFrankPct').textContent = totalFranking !== 0 ? pct(ltdFrankPct) : '';
       
       // Index comparison
-      const indexCurrent = indexData.currentPrice;
+      const indexCurrent = getIndexCurrentPrice(); // Use smart helper
       const indexPrev = getIndexPrevClose();
       
       if (indexCurrent > 0 && indexPrev > 0) {
@@ -1613,7 +1648,8 @@
       for (let i = 0; i < portfolio.length; i++) {
         const stock = portfolio[i];
         const cost = stock.cost * stock.qty;
-        const value = stock.currentPrice * stock.qty;
+        const currentPrice = getStockCurrentPrice(stock); // Use smart helper
+        const value = currentPrice * stock.qty;
         const prevClose = getStockPrevClose(stock);
         const prevValue = prevClose * stock.qty;
         
@@ -1640,7 +1676,7 @@
               </div>
               <div class="stock-current">
                 <div class="stock-price-label">Current</div>
-                <div class="stock-price-value">${stock.currentPrice > 0 ? fmt(stock.currentPrice) : '...'}</div>
+                <div class="stock-price-value">${currentPrice > 0 ? fmt(currentPrice) : '...'}</div>
               </div>
             </div>
             
