@@ -505,6 +505,14 @@
       .index-row { font-size: 11px; }
       .index-value { font-size: 12px; }
       
+      /* Make index data subtext even smaller on mobile */
+      #indexDailyData,
+      #vsIndexDailyData,
+      #indexLtdData,
+      #vsIndexLtdData {
+        font-size: 9px !important;
+      }
+      
       .stock { padding: 14px; }
       .stock-code { font-size: 16px; }
       .stock-qty { font-size: 11px; }
@@ -609,12 +617,18 @@
             
             <div class="index-section">
               <div class="index-row">
-                <span class="index-label">ASX 200 Change</span>
+                <span class="index-label">ASX 200</span>
                 <span class="index-value" id="indexDaily">...</span>
               </div>
-              <div class="index-row">
+              <div class="index-row" style="font-size: 10px; color: #9ca3af; margin-top: -2px;">
+                <span id="indexDailyData">...</span>
+              </div>
+              <div class="index-row" style="margin-top: 8px;">
                 <span class="index-label">vs ASX 200</span>
                 <span class="index-value" id="vsIndexDaily">...</span>
+              </div>
+              <div class="index-row" style="font-size: 10px; color: #9ca3af; margin-top: -2px;">
+                <span id="vsIndexDailyData">...</span>
               </div>
             </div>
           </div>
@@ -665,12 +679,18 @@
             
             <div class="index-section">
               <div class="index-row">
-                <span class="index-label">ASX 200 Change</span>
+                <span class="index-label">ASX 200</span>
                 <span class="index-value" id="indexLtd">...</span>
               </div>
-              <div class="index-row">
+              <div class="index-row" style="font-size: 10px; color: #9ca3af; margin-top: -2px;">
+                <span id="indexLtdData">...</span>
+              </div>
+              <div class="index-row" style="margin-top: 8px;">
                 <span class="index-label">vs ASX 200</span>
                 <span class="index-value" id="vsIndexLtd">...</span>
+              </div>
+              <div class="index-row" style="font-size: 10px; color: #9ca3af; margin-top: -2px;">
+                <span id="vsIndexLtdData">...</span>
               </div>
             </div>
           </div>
@@ -1552,14 +1572,18 @@
         
         document.getElementById('indexDaily').textContent = pct(indexDailyChange);
         document.getElementById('indexDaily').className = `index-value ${indexDailyChange >= 0 ? 'green' : 'red'}`;
+        document.getElementById('indexDailyData').textContent = `${indexCurrent.toFixed(2)} vs ${indexPrev.toFixed(2)}`;
         
         document.getElementById('vsIndexDaily').textContent = pct(vsIndexDaily);
         document.getElementById('vsIndexDaily').className = `index-value ${vsIndexDaily >= 0 ? 'green' : 'red'}`;
+        document.getElementById('vsIndexDailyData').textContent = `Port ${dailyPct >= 0 ? '+' : ''}${dailyPct.toFixed(2)}% vs Index ${indexDailyChange >= 0 ? '+' : ''}${indexDailyChange.toFixed(2)}%`;
       } else {
         document.getElementById('indexDaily').textContent = '...';
         document.getElementById('indexDaily').className = 'index-value';
+        document.getElementById('indexDailyData').textContent = '';
         document.getElementById('vsIndexDaily').textContent = '...';
         document.getElementById('vsIndexDaily').className = 'index-value';
+        document.getElementById('vsIndexDailyData').textContent = '';
       }
       
       if (indexCurrent > 0 && totalCost > 0) {
@@ -1568,14 +1592,18 @@
         
         document.getElementById('indexLtd').textContent = pct(indexLtdChange);
         document.getElementById('indexLtd').className = `index-value ${indexLtdChange >= 0 ? 'green' : 'red'}`;
+        document.getElementById('indexLtdData').textContent = `${indexCurrent.toFixed(2)} vs ${indexData.startPrice.toFixed(2)}`;
         
         document.getElementById('vsIndexLtd').textContent = pct(vsIndexLtd);
         document.getElementById('vsIndexLtd').className = `index-value ${vsIndexLtd >= 0 ? 'green' : 'red'}`;
+        document.getElementById('vsIndexLtdData').textContent = `Port ${ltdPct >= 0 ? '+' : ''}${ltdPct.toFixed(2)}% vs Index ${indexLtdChange >= 0 ? '+' : ''}${indexLtdChange.toFixed(2)}%`;
       } else {
         document.getElementById('indexLtd').textContent = '...';
         document.getElementById('indexLtd').className = 'index-value';
+        document.getElementById('indexLtdData').textContent = '';
         document.getElementById('vsIndexLtd').textContent = '...';
         document.getElementById('vsIndexLtd').className = 'index-value';
+        document.getElementById('vsIndexLtdData').textContent = '';
       }
     }
 
