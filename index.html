@@ -1066,9 +1066,9 @@
         status.style.color = '#16a34a';
         
         // Anomaly detection still runs, just suppressed from UI
-        // if (dataAnomalies.length > 0) {
-        //   showAnomalyAlert();
-        // }
+        if (dataAnomalies.length > 0) {
+          showAnomalyAlert();
+        }
         
         setTimeout(() => {
           updateMarketStatus();
