@@ -905,32 +905,24 @@
         const result = data?.chart?.result?.[0];
         const meta = result?.meta;
         
-        const currentPrice = meta?.regularMarketPrice;
-        if (!currentPrice) return null;
+        if (!meta) return null;
         
-        // Get close prices array and timestamps
-        const closes = result?.indicators?.quote?.[0]?.close;
-        const timestamps = result?.timestamp;
+        // Use Yahoo's official close values from metadata
+        const currentPrice = meta.regularMarketPrice;
+        const previousClose = meta.previousClose || meta.chartPreviousClose;
         
-        if (!closes || !timestamps) return null;
+        if (!currentPrice || !previousClose) return null;
         
-        // Build date-indexed closes
+        const today = getTodayAU();
+        const yesterday = getPreviousTradingDay(today);
+        
+        // Build dailyCloses with yesterday's official close
         const dailyCloses = {};
-        for (let i = 0; i < timestamps.length; i++) {
-          if (closes[i] !== null) {
-            const utcDate = new Date(timestamps[i] * 1000);
-            const auDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
-            const year = auDate.getFullYear();
-            const month = String(auDate.getMonth() + 1).padStart(2, '0');
-            const day = String(auDate.getDate()).padStart(2, '0');
-            const dateStr = `${year}-${month}-${day}`;
-            dailyCloses[dateStr] = closes[i];
-          }
-        }
+        dailyCloses[yesterday] = previousClose;
         
         return {
           currentPrice,
-          priceDate: getTodayAU(),
+          priceDate: today,
           dailyCloses
         };
       } catch (e) {
@@ -951,48 +943,40 @@
         const result = data?.chart?.result?.[0];
         const meta = result?.meta;
         
-        const currentPrice = meta?.regularMarketPrice;
-        if (!currentPrice) return;
+        if (!meta) return;
         
-        const closes = result?.indicators?.quote?.[0]?.close;
-        const timestamps = result?.timestamp;
+        // Use Yahoo's official close values from metadata
+        const currentPrice = meta.regularMarketPrice;
+        const previousClose = meta.previousClose || meta.chartPreviousClose;
         
-        if (!closes || !timestamps) return;
+        if (!currentPrice || !previousClose) return;
         
-        const dailyCloses = {};
-        for (let i = 0; i < timestamps.length; i++) {
-          if (closes[i] !== null) {
-            const utcDate = new Date(timestamps[i] * 1000);
-            const auDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
-            const year = auDate.getFullYear();
-            const month = String(auDate.getMonth() + 1).padStart(2, '0');
-            const day = String(auDate.getDate()).padStart(2, '0');
-            const dateStr = `${year}-${month}-${day}`;
-            dailyCloses[dateStr] = closes[i];
+        const today = getTodayAU();
+        const yesterday = getPreviousTradingDay(today);
+        
+        // Check for anomaly - if yesterday's close already exists and is different
+        if (indexData.dailyCloses[yesterday]) {
+          const existing = indexData.dailyCloses[yesterday];
+          if (Math.abs(existing - previousClose) > 0.01) {
+            console.warn(`ASX 200 close changed for ${yesterday}: ${existing} → ${previousClose}`);
+            dataAnomalies.push({
+              type: 'index_close_changed',
+              date: yesterday,
+              oldPrice: existing,
+              newPrice: previousClose
+            });
+            // Keep existing value (immutable)
+            return;
           }
         }
         
-        // Merge with existing closes, but don't overwrite locked ones
-        for (const [date, price] of Object.entries(dailyCloses)) {
-          if (!indexData.dailyCloses[date]) {
-            indexData.dailyCloses[date] = price;
-          } else {
-            // Check for anomaly
-            const existing = indexData.dailyCloses[date];
-            if (Math.abs(existing - price) > 0.01) {
-              console.warn(`ASX 200 close changed for ${date}: ${existing} → ${price}`);
-              dataAnomalies.push({
-                type: 'index_close_changed',
-                date: date,
-                oldPrice: existing,
-                newPrice: price
-              });
-            }
-          }
+        // Set yesterday's close (only if not already set)
+        if (!indexData.dailyCloses[yesterday]) {
+          indexData.dailyCloses[yesterday] = previousClose;
         }
         
         indexData.currentPrice = currentPrice;
-        indexData.priceDate = getTodayAU();
+        indexData.priceDate = today;
       } catch (e) {
         console.error('ASX 200:', e);
       }
@@ -1030,39 +1014,31 @@
         const data = await fetchPrice(stock.code);
         if (!data) return false;
         
-        // Validate: Check if any existing closes changed
-        for (const [date, newPrice] of Object.entries(data.dailyCloses)) {
-          if (stock.dailyCloses[date]) {
-            const oldPrice = stock.dailyCloses[date];
-            if (Math.abs(oldPrice - newPrice) > 0.01) {
-              console.warn(`${stock.code} close changed for ${date}: ${oldPrice} → ${newPrice}`);
-              dataAnomalies.push({
-                type: 'stock_close_changed',
-                code: stock.code,
-                date: date,
-                oldPrice: oldPrice,
-                newPrice: newPrice
-              });
-            }
-          }
-        }
-        
-        // Validate: Open(today) should equal Close(yesterday)
         const yesterday = getPreviousTradingDay(today);
-        if (stock.dailyCloses[yesterday] && data.dailyCloses[today]) {
-          const yesterdayClose = stock.dailyCloses[yesterday];
-          const todayFromData = data.dailyCloses[today];
-          
-          // If market just opened and today's close equals yesterday's close,
-          // that's actually the opening price (which should match)
-          // We can't validate this perfectly without separate open data
+        
+        // Check for anomaly - if yesterday's close already exists and is different
+        if (stock.dailyCloses[yesterday]) {
+          const existing = stock.dailyCloses[yesterday];
+          const newClose = data.dailyCloses[yesterday];
+          if (Math.abs(existing - newClose) > 0.01) {
+            console.warn(`${stock.code} close changed for ${yesterday}: ${existing} → ${newClose}`);
+            dataAnomalies.push({
+              type: 'stock_close_changed',
+              code: stock.code,
+              date: yesterday,
+              oldPrice: existing,
+              newPrice: newClose
+            });
+            // Keep existing close (immutable), but update current price
+            stock.currentPrice = data.currentPrice;
+            stock.priceDate = data.priceDate;
+            return true;
+          }
         }
         
-        // Merge new closes (don't overwrite existing)
-        for (const [date, price] of Object.entries(data.dailyCloses)) {
-          if (!stock.dailyCloses[date]) {
-            stock.dailyCloses[date] = price;
-          }
+        // Set yesterday's close (only if not already set)
+        if (!stock.dailyCloses[yesterday]) {
+          stock.dailyCloses[yesterday] = data.dailyCloses[yesterday];
         }
         
         // Update current price
