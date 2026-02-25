@@ -937,7 +937,7 @@
     async function fetchPrice(code) {
       try {
         const timestamp = Date.now();
-        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1d&range=2d&_=${timestamp}`;
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1d&range=5d&_=${timestamp}`;
         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
         
         const res = await fetch(proxyUrl, { cache: 'no-store' });
@@ -950,11 +950,49 @@
         if (!meta) return null;
         
         const currentPrice = meta.regularMarketPrice;
-        const prevClose = meta.previousClose || meta.chartPreviousClose;
+        if (!currentPrice) return null;
         
-        if (!currentPrice || !prevClose) return null;
+        // Parse actual close prices with timestamps
+        const closes = result?.indicators?.quote?.[0]?.close;
+        const timestamps = result?.timestamp;
         
-        return { currentPrice, prevClose };
+        if (!closes || !timestamps || closes.length < 2) {
+          // Fallback to meta.previousClose if we can't parse array
+          const prevClose = meta.previousClose || meta.chartPreviousClose;
+          return prevClose ? { currentPrice, prevClose } : null;
+        }
+        
+        // Build array of [date, close] pairs
+        const dailyData = [];
+        for (let i = 0; i < timestamps.length; i++) {
+          if (closes[i] !== null) {
+            const utcDate = new Date(timestamps[i] * 1000);
+            const auDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+            const year = auDate.getFullYear();
+            const month = String(auDate.getMonth() + 1).padStart(2, '0');
+            const day = String(auDate.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+            dailyData.push({ date: dateStr, close: closes[i] });
+          }
+        }
+        
+        // Sort by date descending
+        dailyData.sort((a, b) => b.date.localeCompare(a.date));
+        
+        // Get yesterday's close (most recent close before today)
+        const today = getTodayAU();
+        const prevDayData = dailyData.find(d => d.date < today);
+        
+        if (!prevDayData) {
+          // Fallback
+          const prevClose = meta.previousClose || meta.chartPreviousClose;
+          return prevClose ? { currentPrice, prevClose } : null;
+        }
+        
+        return {
+          currentPrice,
+          prevClose: prevDayData.close
+        };
       } catch (e) {
         console.error(`${code}:`, e);
         return null;
@@ -964,7 +1002,7 @@
     async function fetchIndexData() {
       try {
         const timestamp = Date.now();
-        const url = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=2d&_=${timestamp}`;
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=5d&_=${timestamp}`;
         const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { cache: 'no-store' });
         
         if (!res.ok) return;
@@ -976,12 +1014,55 @@
         if (!meta) return;
         
         const currentPrice = meta.regularMarketPrice;
-        const prevClose = meta.previousClose || meta.chartPreviousClose;
+        if (!currentPrice) return;
         
-        if (!currentPrice || !prevClose) return;
+        // Parse actual close prices with timestamps
+        const closes = result?.indicators?.quote?.[0]?.close;
+        const timestamps = result?.timestamp;
+        
+        if (!closes || !timestamps || closes.length < 2) {
+          // Fallback to meta.previousClose
+          const prevClose = meta.previousClose || meta.chartPreviousClose;
+          if (prevClose) {
+            indexData.currentPrice = currentPrice;
+            indexData.prevClose = prevClose;
+          }
+          return;
+        }
+        
+        // Build array of [date, close] pairs
+        const dailyData = [];
+        for (let i = 0; i < timestamps.length; i++) {
+          if (closes[i] !== null) {
+            const utcDate = new Date(timestamps[i] * 1000);
+            const auDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+            const year = auDate.getFullYear();
+            const month = String(auDate.getMonth() + 1).padStart(2, '0');
+            const day = String(auDate.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+            dailyData.push({ date: dateStr, close: closes[i] });
+          }
+        }
+        
+        // Sort by date descending
+        dailyData.sort((a, b) => b.date.localeCompare(a.date));
+        
+        // Get yesterday's close (most recent close before today)
+        const today = getTodayAU();
+        const prevDayData = dailyData.find(d => d.date < today);
+        
+        if (!prevDayData) {
+          // Fallback
+          const prevClose = meta.previousClose || meta.chartPreviousClose;
+          if (prevClose) {
+            indexData.currentPrice = currentPrice;
+            indexData.prevClose = prevClose;
+          }
+          return;
+        }
         
         indexData.currentPrice = currentPrice;
-        indexData.prevClose = prevClose;
+        indexData.prevClose = prevDayData.close;
       } catch (e) {
         console.error('ASX 200:', e);
       }
