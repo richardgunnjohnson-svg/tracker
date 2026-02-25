@@ -3,12 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASX Portfolio</title>
+  <title>ASX Portfolio Tracker</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#6366f1">
   
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* ==========================================
+       BASE STYLES
+       ========================================== */
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -17,8 +24,14 @@
       padding: 16px;
     }
     
-    .container { max-width: 800px; margin: 0 auto; }
+    .container { 
+      max-width: 800px; 
+      margin: 0 auto; 
+    }
     
+    /* ==========================================
+       CARDS
+       ========================================== */
     .card {
       background: white;
       border-radius: 12px;
@@ -27,7 +40,9 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
     
-    /* Header */
+    /* ==========================================
+       HEADER & BUTTONS
+       ========================================== */
     .header {
       display: flex;
       justify-content: space-between;
@@ -36,7 +51,11 @@
       gap: 16px;
     }
     
-    h1 { font-size: 24px; color: #1f2937; flex-shrink: 0; }
+    h1 { 
+      font-size: 24px; 
+      color: #1f2937; 
+      flex-shrink: 0; 
+    }
     
     .header-buttons {
       display: flex;
@@ -44,7 +63,6 @@
       flex-shrink: 0;
     }
     
-    /* Buttons */
     .btn {
       padding: 10px 18px;
       color: white;
@@ -64,19 +82,8 @@
     .btn-divs { background: #10b981; }
     .btn-purge { background: #ef4444; }
     
-    .btn-edit { 
-      background: #6366f1; 
-      color: white; 
-      font-size: 13px; 
-      padding: 8px 14px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    
+    .btn-edit,
     .btn-delete { 
-      background: #dc2626; 
       color: white; 
       font-size: 13px; 
       padding: 8px 14px;
@@ -86,7 +93,48 @@
       font-weight: 600;
     }
     
-    /* Cost Base */
+    .btn-edit { background: #6366f1; }
+    .btn-delete { background: #dc2626; }
+    
+    /* ==========================================
+       MARKET STATUS BADGE
+       ========================================== */
+    .market-status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    
+    .market-open {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+    
+    .market-closed {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    
+    /* ==========================================
+       DATA SOURCE NOTE
+       ========================================== */
+    .data-note {
+      background: #fef3c7;
+      border: 1px solid #fbbf24;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-bottom: 16px;
+      font-size: 11px;
+      color: #92400e;
+      text-align: center;
+    }
+    
+    /* ==========================================
+       COST BASE DISPLAY
+       ========================================== */
     .cost-base {
       background: #f9fafb;
       border-radius: 8px;
@@ -109,7 +157,9 @@
       color: #1f2937;
     }
     
-    /* Two Column Layout */
+    /* ==========================================
+       TWO COLUMN LAYOUT
+       ========================================== */
     .two-column {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -131,8 +181,12 @@
       border-bottom: 2px solid #e5e7eb;
     }
     
-    /* Metrics */
-    .metric { margin-bottom: 12px; }
+    /* ==========================================
+       METRICS & PERCENTAGES
+       ========================================== */
+    .metric { 
+      margin-bottom: 12px; 
+    }
     
     .metric-label {
       font-size: 11px;
@@ -156,9 +210,10 @@
     .green { color: #16a34a; }
     .red { color: #dc2626; }
     .blue { color: #2563eb; }
-    .orange { color: #ea580c; }
     
-    /* Breakdown */
+    /* ==========================================
+       BREAKDOWN SECTIONS
+       ========================================== */
     .breakdown {
       margin-top: 12px;
       padding-top: 12px;
@@ -174,7 +229,9 @@
       color: #6b7280;
     }
     
-    .breakdown-label { font-weight: 500; }
+    .breakdown-label { 
+      font-weight: 500; 
+    }
     
     .breakdown-value {
       font-weight: 600;
@@ -189,7 +246,6 @@
       font-style: italic;
     }
     
-    /* Sub-breakdown */
     .sub-breakdown {
       margin-left: 16px;
       margin-top: 4px;
@@ -208,7 +264,9 @@
       font-size: 10px;
     }
     
-    /* Index comparison */
+    /* ==========================================
+       INDEX COMPARISON SECTION
+       ========================================== */
     .index-section {
       margin-top: 12px;
       padding-top: 12px;
@@ -233,7 +291,9 @@
       font-size: 13px;
     }
     
-    /* Stock Cards */
+    /* ==========================================
+       STOCK CARDS
+       ========================================== */
     .stock {
       background: white;
       border-radius: 12px;
@@ -250,12 +310,33 @@
       border-bottom: 1px solid #e5e7eb;
     }
     
-    .stock-code { font-size: 18px; font-weight: bold; color: #1f2937; }
-    .stock-qty { font-size: 12px; color: #6b7280; margin-top: 4px; }
+    .stock-code { 
+      font-size: 18px; 
+      font-weight: bold; 
+      color: #1f2937; 
+    }
     
-    .stock-current { text-align: right; }
-    .stock-price-label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
-    .stock-price-value { font-size: 16px; font-weight: bold; color: #1f2937; }
+    .stock-qty { 
+      font-size: 12px; 
+      color: #6b7280; 
+      margin-top: 4px; 
+    }
+    
+    .stock-current { 
+      text-align: right; 
+    }
+    
+    .stock-price-label { 
+      font-size: 11px; 
+      color: #6b7280; 
+      margin-bottom: 4px; 
+    }
+    
+    .stock-price-value { 
+      font-size: 16px; 
+      font-weight: bold; 
+      color: #1f2937; 
+    }
     
     .stock-cost-base {
       background: #f9fafb;
@@ -267,10 +348,25 @@
       align-items: center;
     }
     
-    .stock-cost-base .cost-base-label { font-size: 13px; }
-    .stock-cost-base .cost-base-value { font-size: 16px; }
+    .stock-cost-base .cost-base-label { 
+      font-size: 13px; 
+    }
     
-    /* Dividend List */
+    .stock-cost-base .cost-base-value { 
+      font-size: 16px; 
+    }
+    
+    .stock-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #e5e7eb;
+    }
+    
+    /* ==========================================
+       DIVIDEND LIST
+       ========================================== */
     .dividend-list {
       margin-top: 16px;
       padding-top: 16px;
@@ -287,7 +383,10 @@
       padding: 6px 0;
     }
     
-    .dividend-date { color: #1f2937; font-weight: 600; }
+    .dividend-date { 
+      color: #1f2937; 
+      font-weight: 600; 
+    }
     
     .dividend-franking {
       text-align: right;
@@ -297,18 +396,13 @@
       font-weight: 600;
     }
     
-    .dividend-franking:hover { text-decoration: underline; }
-    
-    /* Stock Actions */
-    .stock-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid #e5e7eb;
+    .dividend-franking:hover { 
+      text-decoration: underline; 
     }
     
-    /* Empty State */
+    /* ==========================================
+       EMPTY STATE
+       ========================================== */
     .empty-state {
       text-align: center;
       padding: 40px 20px;
@@ -325,7 +419,9 @@
       font-size: 14px;
     }
     
-    /* Status */
+    /* ==========================================
+       STATUS TEXT
+       ========================================== */
     .status {
       font-size: 12px;
       color: #6b7280;
@@ -333,42 +429,9 @@
       text-align: center;
     }
     
-    .market-status {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 600;
-      margin-left: 8px;
-    }
-    
-    .market-open {
-      background: #dcfce7;
-      color: #16a34a;
-    }
-    
-    .market-closed {
-      background: #fee2e2;
-      color: #dc2626;
-    }
-    
-    /* Alert banner */
-    .alert {
-      background: #fef3c7;
-      border: 1px solid #fbbf24;
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin-bottom: 16px;
-      font-size: 13px;
-      color: #92400e;
-    }
-    
-    .alert-title {
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    
-    /* Modal */
+    /* ==========================================
+       MODAL
+       ========================================== */
     .modal {
       display: none;
       position: fixed;
@@ -382,7 +445,9 @@
       justify-content: center;
     }
     
-    .modal.active { display: flex; }
+    .modal.active { 
+      display: flex; 
+    }
     
     .modal-content {
       background: white;
@@ -436,10 +501,19 @@
       cursor: pointer;
     }
     
-    .btn-save { background: #6366f1; color: white; }
-    .btn-cancel { background: #e5e7eb; color: #4b5563; }
+    .btn-save { 
+      background: #6366f1; 
+      color: white; 
+    }
     
-    /* Mobile Responsive */
+    .btn-cancel { 
+      background: #e5e7eb; 
+      color: #4b5563; 
+    }
+    
+    /* ==========================================
+       MOBILE RESPONSIVE
+       ========================================== */
     @media (max-width: 640px) {
       body { padding: 12px; }
       .card { padding: 16px; }
@@ -505,7 +579,6 @@
       .index-row { font-size: 11px; }
       .index-value { font-size: 12px; }
       
-      /* Make index data subtext even smaller on mobile */
       #indexDailyData,
       #vsIndexDailyData,
       #indexLtdData,
@@ -562,7 +635,9 @@
         </div>
       </div>
       
-      <div id="alertBanner" style="display: none;"></div>
+      <div class="data-note">
+        📊 Prices from Yahoo Finance (indicative) • Verify with broker for tax reporting
+      </div>
       
       <div id="portfolioSummary" style="display: none;">
         <div class="cost-base">
@@ -731,51 +806,22 @@
   </div>
 
   <script>
-    // ==========================================
-    // DATA STRUCTURE WITH IMMUTABLE CLOSES
-    // ==========================================
-    /*
-    Stock structure:
-    {
-      code: "AGL",
-      qty: 14615,
-      cost: 9.33,
-      currentPrice: 10.60,
-      priceDate: "2025-02-20",
-      dailyCloses: {
-        "2025-02-17": 10.00,  // IMMUTABLE after 4:30 PM
-        "2025-02-20": 10.58   // IMMUTABLE after 4:30 PM
-      }
-    }
-    
-    Index structure:
-    {
-      currentPrice: 9082.40,
-      priceDate: "2025-02-20",
-      dailyCloses: {
-        "2025-02-17": 9050.20,
-        "2025-02-20": 9082.40
-      },
-      startPrice: 8830.90,
-      startDate: "2025-11-10"
-    }
-    */
-
+    /* ==========================================
+       GLOBAL STATE
+       ========================================== */
     let portfolio = [];
     let dividends = {};
     let indexData = {
       currentPrice: 0,
-      priceDate: null,
-      dailyCloses: {},
-      startPrice: 8830.90,
+      prevClose: 0,
+      startPrice: 8830.90,  // ASX 200 close on 2025-11-10
       startDate: "2025-11-10"
     };
     let editingIndex = -1;
-    let dataAnomalies = [];
 
-    // ==========================================
-    // DATE & TIME UTILITIES
-    // ==========================================
+    /* ==========================================
+       DATE & TIME UTILITIES (Australia/Sydney)
+       ========================================== */
     
     function getTodayAU() {
       const now = new Date();
@@ -783,21 +829,6 @@
       const year = auNow.getFullYear();
       const month = String(auNow.getMonth() + 1).padStart(2, '0');
       const day = String(auNow.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-
-    function getPreviousTradingDay(dateStr) {
-      const date = new Date(dateStr + 'T12:00:00');
-      date.setDate(date.getDate() - 1);
-      
-      // Skip backwards over weekends
-      while (date.getDay() === 0 || date.getDay() === 6) {
-        date.setDate(date.getDate() - 1);
-      }
-      
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     }
 
@@ -809,8 +840,10 @@
       const hour = auNow.getHours();
       const minute = auNow.getMinutes();
       
+      // Weekend check
       if (day === 0 || day === 6) return false;
       
+      // Trading hours: 10:00 AM - 4:30 PM AEST/AEDT
       const timeInMinutes = hour * 60 + minute;
       const marketOpen = 10 * 60;
       const marketClose = 16 * 60 + 30;
@@ -841,61 +874,70 @@
       } else if (timeInMinutes >= marketClose) {
         return 'Market Closed';
       } else {
-        const minsUntilClose = marketClose - timeInMinutes;
-        const hoursUntil = Math.floor(minsUntilClose / 60);
-        const minsUntil = minsUntilClose % 60;
-        return `Closes in ${hoursUntil}h ${minsUntil}m`;
+        return 'Market Open';
       }
     }
 
-    // ==========================================
-    // DATA PERSISTENCE
-    // ==========================================
+    /* ==========================================
+       DATA PERSISTENCE (localStorage)
+       ========================================== */
 
     function loadData() {
-      const saved = localStorage.getItem('asx-portfolio-v2');
+      const saved = localStorage.getItem('asx-portfolio-simple');
       if (saved) {
         portfolio = JSON.parse(saved);
       } else {
-        // Migration from old format
-        const oldSaved = localStorage.getItem('asx-portfolio');
-        if (oldSaved) {
-          const oldPortfolio = JSON.parse(oldSaved);
+        // Migration from old formats
+        const v2 = localStorage.getItem('asx-portfolio-v2');
+        const v1 = localStorage.getItem('asx-portfolio');
+        
+        if (v2) {
+          const oldPortfolio = JSON.parse(v2);
+          portfolio = oldPortfolio.map(stock => ({
+            code: stock.code,
+            qty: stock.qty,
+            cost: stock.cost,
+            currentPrice: stock.currentPrice || 0,
+            prevClose: 0
+          }));
+          console.log('Migrated from v2');
+        } else if (v1) {
+          const oldPortfolio = JSON.parse(v1);
           portfolio = oldPortfolio.map(stock => ({
             code: stock.code,
             qty: stock.qty,
             cost: stock.cost,
             currentPrice: stock.price || 0,
-            priceDate: null,
-            dailyCloses: {}
+            prevClose: 0
           }));
-          console.log('Migrated portfolio from old format');
+          console.log('Migrated from v1');
         }
       }
       
       const savedDivs = localStorage.getItem('asx-dividends');
       dividends = savedDivs ? JSON.parse(savedDivs) : {};
       
-      const savedIndex = localStorage.getItem('asx-index-v2');
+      const savedIndex = localStorage.getItem('asx-index-simple');
       if (savedIndex) {
         indexData = JSON.parse(savedIndex);
       }
     }
 
     function saveData() {
-      localStorage.setItem('asx-portfolio-v2', JSON.stringify(portfolio));
+      localStorage.setItem('asx-portfolio-simple', JSON.stringify(portfolio));
       localStorage.setItem('asx-dividends', JSON.stringify(dividends));
-      localStorage.setItem('asx-index-v2', JSON.stringify(indexData));
+      localStorage.setItem('asx-index-simple', JSON.stringify(indexData));
     }
 
-    // ==========================================
-    // PRICE FETCHING WITH VALIDATION
-    // ==========================================
+    /* ==========================================
+       PRICE FETCHING (Yahoo Finance)
+       Simple: Just get current and previous close
+       ========================================== */
 
     async function fetchPrice(code) {
       try {
         const timestamp = Date.now();
-        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1d&range=5d&_=${timestamp}`;
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1d&range=2d&_=${timestamp}`;
         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
         
         const res = await fetch(proxyUrl, { cache: 'no-store' });
@@ -907,24 +949,12 @@
         
         if (!meta) return null;
         
-        // Use Yahoo's official close values from metadata
         const currentPrice = meta.regularMarketPrice;
-        const previousClose = meta.previousClose || meta.chartPreviousClose;
+        const prevClose = meta.previousClose || meta.chartPreviousClose;
         
-        if (!currentPrice || !previousClose) return null;
+        if (!currentPrice || !prevClose) return null;
         
-        const today = getTodayAU();
-        const yesterday = getPreviousTradingDay(today);
-        
-        // Build dailyCloses with yesterday's official close
-        const dailyCloses = {};
-        dailyCloses[yesterday] = previousClose;
-        
-        return {
-          currentPrice,
-          priceDate: today,
-          dailyCloses
-        };
+        return { currentPrice, prevClose };
       } catch (e) {
         console.error(`${code}:`, e);
         return null;
@@ -934,7 +964,7 @@
     async function fetchIndexData() {
       try {
         const timestamp = Date.now();
-        const url = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=5d&_=${timestamp}`;
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=2d&_=${timestamp}`;
         const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { cache: 'no-store' });
         
         if (!res.ok) return;
@@ -945,57 +975,31 @@
         
         if (!meta) return;
         
-        // Use Yahoo's official close values from metadata
         const currentPrice = meta.regularMarketPrice;
-        const previousClose = meta.previousClose || meta.chartPreviousClose;
+        const prevClose = meta.previousClose || meta.chartPreviousClose;
         
-        if (!currentPrice || !previousClose) return;
-        
-        const today = getTodayAU();
-        const yesterday = getPreviousTradingDay(today);
-        
-        // Check for anomaly - if yesterday's close already exists and is different
-        if (indexData.dailyCloses[yesterday]) {
-          const existing = indexData.dailyCloses[yesterday];
-          if (Math.abs(existing - previousClose) > 0.01) {
-            console.warn(`ASX 200 close changed for ${yesterday}: ${existing} → ${previousClose}`);
-            dataAnomalies.push({
-              type: 'index_close_changed',
-              date: yesterday,
-              oldPrice: existing,
-              newPrice: previousClose
-            });
-            // Keep existing value (immutable)
-            return;
-          }
-        }
-        
-        // Set yesterday's close (only if not already set)
-        if (!indexData.dailyCloses[yesterday]) {
-          indexData.dailyCloses[yesterday] = previousClose;
-        }
+        if (!currentPrice || !prevClose) return;
         
         indexData.currentPrice = currentPrice;
-        indexData.priceDate = today;
+        indexData.prevClose = prevClose;
       } catch (e) {
         console.error('ASX 200:', e);
       }
     }
 
-    // ==========================================
-    // PRICE UPDATE WITH VALIDATION
-    // ==========================================
+    /* ==========================================
+       PRICE UPDATE
+       ========================================== */
 
     async function updatePrices() {
       if (portfolio.length === 0) return;
       
       if (!isMarketOpen()) {
         const status = document.getElementById('status');
-        status.textContent = getMarketStatusText();
+        status.textContent = 'Market closed - refresh during trading hours (10 AM - 4:30 PM)';
         status.style.color = '#dc2626';
         setTimeout(() => {
-          status.textContent = getMarketStatusText();
-          status.style.color = '#6b7280';
+          status.textContent = '';
         }, 3000);
         return;
       }
@@ -1005,45 +1009,15 @@
       
       btn.textContent = '...';
       btn.disabled = true;
-      dataAnomalies = [];
       
       const start = Date.now();
-      const today = getTodayAU();
       
-      const promises = portfolio.map(async (stock, index) => {
+      const promises = portfolio.map(async (stock) => {
         const data = await fetchPrice(stock.code);
         if (!data) return false;
         
-        const yesterday = getPreviousTradingDay(today);
-        
-        // Check for anomaly - if yesterday's close already exists and is different
-        if (stock.dailyCloses[yesterday]) {
-          const existing = stock.dailyCloses[yesterday];
-          const newClose = data.dailyCloses[yesterday];
-          if (Math.abs(existing - newClose) > 0.01) {
-            console.warn(`${stock.code} close changed for ${yesterday}: ${existing} → ${newClose}`);
-            dataAnomalies.push({
-              type: 'stock_close_changed',
-              code: stock.code,
-              date: yesterday,
-              oldPrice: existing,
-              newPrice: newClose
-            });
-            // Keep existing close (immutable), but update current price
-            stock.currentPrice = data.currentPrice;
-            stock.priceDate = data.priceDate;
-            return true;
-          }
-        }
-        
-        // Set yesterday's close (only if not already set)
-        if (!stock.dailyCloses[yesterday]) {
-          stock.dailyCloses[yesterday] = data.dailyCloses[yesterday];
-        }
-        
-        // Update current price
         stock.currentPrice = data.currentPrice;
-        stock.priceDate = data.priceDate;
+        stock.prevClose = data.prevClose;
         
         return true;
       });
@@ -1065,13 +1039,8 @@
         status.textContent = `✓ ${elapsed}s`;
         status.style.color = '#16a34a';
         
-        // Anomaly detection still runs, just suppressed from UI
-        if (dataAnomalies.length > 0) {
-          showAnomalyAlert();
-        }
-        
         setTimeout(() => {
-          updateMarketStatus();
+          status.textContent = '';
         }, 3000);
       } else {
         status.textContent = `⚠️ ${success}/${portfolio.length}`;
@@ -1079,36 +1048,13 @@
       }
     }
 
-    function showAnomalyAlert() {
-      const banner = document.getElementById('alertBanner');
-      let html = '<div class="alert">';
-      html += '<div class="alert-title">⚠️ Data Anomaly Detected</div>';
-      
-      for (const anomaly of dataAnomalies) {
-        if (anomaly.type === 'stock_close_changed') {
-          html += `<div>${anomaly.code} close for ${anomaly.date} changed: $${anomaly.oldPrice.toFixed(2)} → $${anomaly.newPrice.toFixed(2)}</div>`;
-        } else if (anomaly.type === 'index_close_changed') {
-          html += `<div>ASX 200 close for ${anomaly.date} changed: ${anomaly.oldPrice.toFixed(2)} → ${anomaly.newPrice.toFixed(2)}</div>`;
-        }
-      }
-      
-      html += '</div>';
-      banner.innerHTML = html;
-      banner.style.display = 'block';
-      
-      // Auto-hide after 10 seconds
-      setTimeout(() => {
-        banner.style.display = 'none';
-      }, 10000);
-    }
-
     function refresh() {
       updatePrices();
     }
 
-    // ==========================================
-    // MARKET STATUS
-    // ==========================================
+    /* ==========================================
+       MARKET STATUS UI
+       ========================================== */
 
     function updateMarketStatus() {
       const btn = document.getElementById('refreshBtn');
@@ -1117,12 +1063,12 @@
       
       if (!marketOpen) {
         btn.disabled = true;
-        btn.title = getMarketStatusText();
+        btn.title = 'Market closed - refresh available 10 AM - 4:30 PM';
       } else {
         if (portfolio.length > 0) {
           btn.disabled = false;
         }
-        btn.title = 'Refresh prices (market open)';
+        btn.title = 'Refresh prices';
       }
       
       if (marketOpen) {
@@ -1132,97 +1078,11 @@
         badge.textContent = getMarketStatusText();
         badge.className = 'market-status market-closed';
       }
-      
-      const status = document.getElementById('status');
-      if (!status.textContent || status.textContent.startsWith('Market') || status.textContent.startsWith('Opens') || status.textContent.startsWith('Closes')) {
-        if (marketOpen) {
-          status.textContent = '';
-        } else {
-          status.textContent = getMarketStatusText();
-          status.style.color = '#6b7280';
-        }
-      }
     }
 
-    // ==========================================
-    // CALCULATIONS WITH IMMUTABLE CLOSES
-    // ==========================================
-
-    function getStockPrevClose(stock) {
-      const today = getTodayAU();
-      const yesterday = getPreviousTradingDay(today);
-      
-      // If we have yesterday's close, use it
-      if (stock.dailyCloses[yesterday]) {
-        return stock.dailyCloses[yesterday];
-      }
-      
-      // Otherwise, find the most recent close before today
-      const dates = Object.keys(stock.dailyCloses).sort().reverse();
-      for (const date of dates) {
-        if (date < today) {
-          return stock.dailyCloses[date];
-        }
-      }
-      
-      return stock.currentPrice; // Fallback
-    }
-
-    function getStockCurrentPrice(stock) {
-      // If price is from today, use it (market is open or was open today)
-      const today = getTodayAU();
-      if (stock.priceDate === today) {
-        return stock.currentPrice;
-      }
-      
-      // Price is stale (from yesterday or earlier)
-      // Before market open, use yesterday's close to avoid false daily changes
-      const yesterday = getPreviousTradingDay(today);
-      if (stock.dailyCloses[yesterday]) {
-        return stock.dailyCloses[yesterday];
-      }
-      
-      // Fallback to stored price
-      return stock.currentPrice;
-    }
-
-    function getIndexPrevClose() {
-      const today = getTodayAU();
-      const yesterday = getPreviousTradingDay(today);
-      
-      if (indexData.dailyCloses[yesterday]) {
-        return indexData.dailyCloses[yesterday];
-      }
-      
-      const dates = Object.keys(indexData.dailyCloses).sort().reverse();
-      for (const date of dates) {
-        if (date < today) {
-          return indexData.dailyCloses[date];
-        }
-      }
-      
-      return indexData.currentPrice;
-    }
-
-    function getIndexCurrentPrice() {
-      // If price is from today, use it
-      const today = getTodayAU();
-      if (indexData.priceDate === today) {
-        return indexData.currentPrice;
-      }
-      
-      // Price is stale - use yesterday's close
-      const yesterday = getPreviousTradingDay(today);
-      if (indexData.dailyCloses[yesterday]) {
-        return indexData.dailyCloses[yesterday];
-      }
-      
-      return indexData.currentPrice;
-    }
-
-    // ==========================================
-    // DIVIDENDS
-    // ==========================================
+    /* ==========================================
+       DIVIDENDS
+       ========================================== */
 
     async function fetchDividends(code) {
       try {
@@ -1303,7 +1163,7 @@
     }
 
     function clearDividends() {
-      if (!confirm('Clear all dividend data?\n\nYou can re-sync afterwards to fetch with correct Australian dates.')) {
+      if (!confirm('Clear all dividend data?\n\nYou can re-sync afterwards.')) {
         return;
       }
       
@@ -1349,9 +1209,9 @@
       return { todayDiv, todayFranking };
     }
 
-    // ==========================================
-    // MODAL & STOCK MANAGEMENT
-    // ==========================================
+    /* ==========================================
+       STOCK MANAGEMENT (Modal)
+       ========================================== */
 
     function openAddModal() {
       editingIndex = -1;
@@ -1400,8 +1260,7 @@
           qty: qty,
           cost: cost,
           currentPrice: 0,
-          priceDate: null,
-          dailyCloses: {}
+          prevClose: 0
         });
       } else {
         portfolio[editingIndex].qty = qty;
@@ -1447,9 +1306,9 @@
       render();
     }
 
-    // ==========================================
-    // FORMATTING
-    // ==========================================
+    /* ==========================================
+       FORMATTING HELPERS
+       ========================================== */
 
     function fmt(num) {
       return new Intl.NumberFormat('en-AU', {
@@ -1465,9 +1324,9 @@
       return `(${sign}${num.toFixed(2)}%)`;
     }
 
-    // ==========================================
-    // RENDERING
-    // ==========================================
+    /* ==========================================
+       RENDERING
+       ========================================== */
 
     function render() {
       if (portfolio.length === 0) {
@@ -1497,10 +1356,8 @@
       
       for (const stock of portfolio) {
         const cost = stock.cost * stock.qty;
-        const currentPrice = getStockCurrentPrice(stock); // Use smart helper
-        const value = currentPrice * stock.qty;
-        const prevClose = getStockPrevClose(stock);
-        const prevValue = prevClose * stock.qty;
+        const value = stock.currentPrice * stock.qty;
+        const prevValue = stock.prevClose * stock.qty;
         
         totalCost += cost;
         totalValue += value;
@@ -1517,6 +1374,7 @@
       
       document.getElementById('portfolioCostBase').textContent = fmt(totalCost);
       
+      // Daily calculations
       const dailyCapital = totalValue - totalPrevValue;
       const dailyCash = todayDivs + todayFranking;
       const dailyTotal = dailyCapital + dailyCash;
@@ -1545,6 +1403,7 @@
       const dailyFrankPct = totalPrevValue > 0 ? (todayFranking / totalPrevValue) * 100 : 0;
       document.getElementById('dailyFrankPct').textContent = todayFranking !== 0 ? pct(dailyFrankPct) : '';
       
+      // Life-to-date calculations
       const ltdCapital = totalValue - totalCost;
       const ltdCash = totalDivs + totalFranking;
       const ltdTotal = ltdCapital + ltdCash;
@@ -1573,9 +1432,9 @@
       const ltdFrankPct = totalCost > 0 ? (totalFranking / totalCost) * 100 : 0;
       document.getElementById('ltdFrankPct').textContent = totalFranking !== 0 ? pct(ltdFrankPct) : '';
       
-      // Index comparison
-      const indexCurrent = getIndexCurrentPrice(); // Use smart helper
-      const indexPrev = getIndexPrevClose();
+      // Index comparison - Daily
+      const indexCurrent = indexData.currentPrice;
+      const indexPrev = indexData.prevClose;
       
       if (indexCurrent > 0 && indexPrev > 0) {
         const indexDailyChange = ((indexCurrent - indexPrev) / indexPrev) * 100;
@@ -1597,6 +1456,7 @@
         document.getElementById('vsIndexDailyData').textContent = '';
       }
       
+      // Index comparison - Life-to-date
       if (indexCurrent > 0 && totalCost > 0) {
         const indexLtdChange = ((indexCurrent - indexData.startPrice) / indexData.startPrice) * 100;
         const vsIndexLtd = ltdPct - indexLtdChange;
@@ -1624,10 +1484,8 @@
       for (let i = 0; i < portfolio.length; i++) {
         const stock = portfolio[i];
         const cost = stock.cost * stock.qty;
-        const currentPrice = getStockCurrentPrice(stock); // Use smart helper
-        const value = currentPrice * stock.qty;
-        const prevClose = getStockPrevClose(stock);
-        const prevValue = prevClose * stock.qty;
+        const value = stock.currentPrice * stock.qty;
+        const prevValue = stock.prevClose * stock.qty;
         
         const dailyCapital = value - prevValue;
         const todayDivs = calculateTodaysDividends(stock.code, stock.qty);
@@ -1652,7 +1510,7 @@
               </div>
               <div class="stock-current">
                 <div class="stock-price-label">Current</div>
-                <div class="stock-price-value">${currentPrice > 0 ? fmt(currentPrice) : '...'}</div>
+                <div class="stock-price-value">${stock.currentPrice > 0 ? fmt(stock.currentPrice) : '...'}</div>
               </div>
             </div>
             
@@ -1804,9 +1662,9 @@
       document.getElementById('stocks').innerHTML = html;
     }
 
-    // ==========================================
-    // INITIALIZATION
-    // ==========================================
+    /* ==========================================
+       INITIALIZATION
+       ========================================== */
 
     window.addEventListener('load', () => {
       loadData();
@@ -1820,6 +1678,7 @@
         }
       }
       
+      // Update market status every minute
       setInterval(updateMarketStatus, 60000);
     });
   </script>
