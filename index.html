@@ -77,10 +77,8 @@
     
     .btn:hover { opacity: 0.9; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-add { background: #8b5cf6; }
     .btn-latest { background: #6366f1; }
     .btn-divs { background: #10b981; }
-    .btn-purge { background: #ef4444; }
     
     .btn-edit,
     .btn-delete { 
@@ -116,20 +114,6 @@
     .market-closed {
       background: #fee2e2;
       color: #dc2626;
-    }
-    
-    /* ==========================================
-       DATA SOURCE NOTE
-       ========================================== */
-    .data-note {
-      background: #fef3c7;
-      border: 1px solid #fbbf24;
-      border-radius: 8px;
-      padding: 8px 12px;
-      margin-bottom: 16px;
-      font-size: 11px;
-      color: #92400e;
-      text-align: center;
     }
     
     /* ==========================================
@@ -593,7 +577,7 @@
       
       .header-buttons {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 6px;
       }
       
@@ -683,18 +667,9 @@
           <span id="marketStatusBadge" class="market-status market-closed">Market Closed</span>
         </h1>
         <div class="header-buttons">
-          <button class="btn btn-add" onclick="openAddModal()">Add</button>
           <button class="btn btn-latest" id="refreshBtn" onclick="refresh()">Latest</button>
           <button class="btn btn-divs" id="syncBtn" onclick="syncDividends()">Divs</button>
-          <button class="btn btn-purge" onclick="clearDividends()">Purge</button>
         </div>
-        <div style="margin-top: 8px; text-align: center;">
-          <button class="btn" id="fixDataBtn" onclick="forceRefresh()" style="background: #f59e0b; font-size: 12px; padding: 8px 16px;">Fix Data</button>
-        </div>
-      </div>
-      
-      <div class="data-note">
-        📊 Prices from Yahoo Finance (indicative) • Verify with broker for tax reporting
       </div>
       
       <div id="portfolioSummary" style="display: none;">
