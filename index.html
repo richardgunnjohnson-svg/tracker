@@ -215,6 +215,31 @@
       font-size: 10px;
     }
     
+    /* INDEX COMPARISON */
+    .index-section {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #d1d5db;
+    }
+    
+    .index-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+    
+    .index-label {
+      color: #6b7280;
+      font-weight: 500;
+    }
+    
+    .index-value {
+      font-weight: 600;
+      font-size: 13px;
+    }
+    
     /* STOCK CARDS */
     .stock {
       background: white;
@@ -400,6 +425,14 @@
       .sub-breakdown .breakdown-row { font-size: 10px; }
       .sub-breakdown .breakdown-pct { font-size: 9px; }
       
+      .index-row { font-size: 11px; }
+      .index-value { font-size: 12px; }
+      
+      #indexLtdData,
+      #vsIndexLtdData {
+        font-size: 9px !important;
+      }
+      
       .stock { padding: 14px; }
       .stock-code { font-size: 16px; }
       .stock-qty { font-size: 11px; }
@@ -529,6 +562,23 @@
                 </div>
               </div>
             </div>
+            
+            <div class="index-section">
+              <div class="index-row">
+                <span class="index-label">ASX 200</span>
+                <span class="index-value" id="indexLtd">...</span>
+              </div>
+              <div class="index-row" style="font-size: 10px; color: #9ca3af; margin-top: -2px;">
+                <span id="indexLtdData">...</span>
+              </div>
+              <div class="index-row" style="margin-top: 8px;">
+                <span class="index-label">vs ASX 200</span>
+                <span class="index-value" id="vsIndexLtd">...</span>
+              </div>
+              <div class="index-row" style="font-size: 10px; color: #9ca3af; margin-top: -2px;">
+                <span id="vsIndexLtdData">...</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -550,6 +600,12 @@
        ========================================== */
     let portfolio = [];
     let dividends = {};
+    let indexData = {
+      currentPrice: 0,
+      prevClose: 0,
+      startPrice: 8830.90,  // ASX 200 close on 2025-11-10
+      startDate: "2025-11-10"
+    };
 
     /* ==========================================
        DATE & TIME (Australia/Sydney)
@@ -644,11 +700,17 @@
       
       const savedDivs = localStorage.getItem('asx-dividends');
       dividends = savedDivs ? JSON.parse(savedDivs) : {};
+      
+      const savedIndex = localStorage.getItem('asx-index-simple');
+      if (savedIndex) {
+        indexData = JSON.parse(savedIndex);
+      }
     }
 
     function saveData() {
       localStorage.setItem('asx-portfolio-simple', JSON.stringify(portfolio));
       localStorage.setItem('asx-dividends', JSON.stringify(dividends));
+      localStorage.setItem('asx-index-simple', JSON.stringify(indexData));
     }
 
     /* ==========================================
@@ -727,6 +789,80 @@
        PRICE UPDATE
        ========================================== */
 
+    async function fetchIndexData() {
+      try {
+        const timestamp = Date.now();
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=5d&_=${timestamp}`;
+        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { cache: 'no-store' });
+        
+        if (!res.ok) return;
+        
+        const data = await res.json();
+        const result = data?.chart?.result?.[0];
+        const meta = result?.meta;
+        
+        if (!meta) return;
+        
+        const currentPrice = meta.regularMarketPrice;
+        if (!currentPrice) return;
+        
+        // Parse closes array
+        const closes = result?.indicators?.quote?.[0]?.close;
+        const timestamps = result?.timestamp;
+        
+        if (!closes || !timestamps || closes.length < 2) {
+          const prevClose = meta.chartPreviousClose || meta.previousClose;
+          if (prevClose) {
+            indexData.currentPrice = currentPrice;
+            indexData.prevClose = prevClose;
+          }
+          return;
+        }
+        
+        // Build array of date/close pairs
+        const dailyData = [];
+        for (let i = 0; i < timestamps.length; i++) {
+          if (closes[i] !== null) {
+            const utcDate = new Date(timestamps[i] * 1000);
+            const auDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+            const year = auDate.getFullYear();
+            const month = String(auDate.getMonth() + 1).padStart(2, '0');
+            const day = String(auDate.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+            dailyData.push({ date: dateStr, close: closes[i] });
+          }
+        }
+        
+        dailyData.sort((a, b) => b.date.localeCompare(a.date));
+        
+        // Calculate yesterday
+        const today = getTodayAU();
+        const yesterdayDate = new Date(today + 'T12:00:00');
+        yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+        while (yesterdayDate.getDay() === 0 || yesterdayDate.getDay() === 6) {
+          yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+        }
+        const yesterday = yesterdayDate.toISOString().split('T')[0];
+        
+        // Look for exact yesterday
+        const yesterdayData = dailyData.find(d => d.date === yesterday);
+        
+        if (yesterdayData) {
+          indexData.currentPrice = currentPrice;
+          indexData.prevClose = yesterdayData.close;
+        } else {
+          // Fallback to chartPreviousClose
+          const prevClose = meta.chartPreviousClose || meta.previousClose;
+          if (prevClose) {
+            indexData.currentPrice = currentPrice;
+            indexData.prevClose = prevClose;
+          }
+        }
+      } catch (e) {
+        console.error('ASX 200:', e);
+      }
+    }
+
     async function updatePrices() {
       if (portfolio.length === 0) return;
       
@@ -760,6 +896,8 @@
       
       const results = await Promise.all(promises);
       const success = results.filter(r => r).length;
+      
+      await fetchIndexData();
       
       saveData();
       render();
@@ -1073,6 +1211,27 @@
       document.getElementById('ltdFrank').textContent = fmt(totalFranking);
       const ltdFrankPct = totalCost > 0 ? (totalFranking / totalCost) * 100 : 0;
       document.getElementById('ltdFrankPct').textContent = totalFranking !== 0 ? pct(ltdFrankPct) : '';
+      
+      // Index comparison - Life-to-date only
+      if (indexData.currentPrice > 0 && totalCost > 0) {
+        const indexLtdChange = ((indexData.currentPrice - indexData.startPrice) / indexData.startPrice) * 100;
+        const vsIndexLtd = ltdPct - indexLtdChange;
+        
+        document.getElementById('indexLtd').textContent = pct(indexLtdChange);
+        document.getElementById('indexLtd').className = `index-value ${indexLtdChange >= 0 ? 'green' : 'red'}`;
+        document.getElementById('indexLtdData').textContent = `${indexData.currentPrice.toFixed(2)} vs ${indexData.startPrice.toFixed(2)}`;
+        
+        document.getElementById('vsIndexLtd').textContent = pct(vsIndexLtd);
+        document.getElementById('vsIndexLtd').className = `index-value ${vsIndexLtd >= 0 ? 'green' : 'red'}`;
+        document.getElementById('vsIndexLtdData').textContent = `Port ${ltdPct >= 0 ? '+' : ''}${ltdPct.toFixed(2)}% vs Index ${indexLtdChange >= 0 ? '+' : ''}${indexLtdChange.toFixed(2)}%`;
+      } else {
+        document.getElementById('indexLtd').textContent = '...';
+        document.getElementById('indexLtd').className = 'index-value';
+        document.getElementById('indexLtdData').textContent = '';
+        document.getElementById('vsIndexLtd').textContent = '...';
+        document.getElementById('vsIndexLtd').className = 'index-value';
+        document.getElementById('vsIndexLtdData').textContent = '';
+      }
     }
 
     function renderStocks() {
