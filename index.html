@@ -8,9 +8,6 @@
   <meta name="theme-color" content="#6366f1">
   
   <style>
-    /* ==========================================
-       BASE STYLES
-       ========================================== */
     * { 
       margin: 0; 
       padding: 0; 
@@ -29,9 +26,6 @@
       margin: 0 auto; 
     }
     
-    /* ==========================================
-       CARDS
-       ========================================== */
     .card {
       background: white;
       border-radius: 12px;
@@ -40,9 +34,7 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
     
-    /* ==========================================
-       HEADER & BUTTONS
-       ========================================== */
+    /* HEADER */
     .header {
       display: flex;
       justify-content: space-between;
@@ -80,23 +72,6 @@
     .btn-latest { background: #6366f1; }
     .btn-divs { background: #10b981; }
     
-    .btn-edit,
-    .btn-delete { 
-      color: white; 
-      font-size: 13px; 
-      padding: 8px 14px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    
-    .btn-edit { background: #6366f1; }
-    .btn-delete { background: #dc2626; }
-    
-    /* ==========================================
-       MARKET STATUS BADGE
-       ========================================== */
     .market-status {
       display: inline-block;
       padding: 4px 10px;
@@ -116,64 +91,7 @@
       color: #dc2626;
     }
     
-    /* ==========================================
-       DIAGNOSTIC WINDOW
-       ========================================== */
-    .diagnostic {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      border: 2px solid #3b82f6;
-      border-radius: 12px;
-      padding: 20px;
-      max-width: 600px;
-      max-height: 80vh;
-      overflow-y: auto;
-      z-index: 2000;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-      display: none;
-    }
-    
-    .diagnostic.active {
-      display: block;
-    }
-    
-    .diagnostic h3 {
-      color: #1f2937;
-      margin-bottom: 12px;
-      font-size: 16px;
-    }
-    
-    .diagnostic pre {
-      background: #f3f4f6;
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-    
-    .diagnostic-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 1999;
-      display: none;
-    }
-    
-    .diagnostic-overlay.active {
-      display: block;
-    }
-    
-    /* ==========================================
-       COST BASE DISPLAY
-       ========================================== */
+    /* COST BASE */
     .cost-base {
       background: #f9fafb;
       border-radius: 8px;
@@ -196,9 +114,7 @@
       color: #1f2937;
     }
     
-    /* ==========================================
-       TWO COLUMN LAYOUT
-       ========================================== */
+    /* TWO COLUMN LAYOUT */
     .two-column {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -220,9 +136,7 @@
       border-bottom: 2px solid #e5e7eb;
     }
     
-    /* ==========================================
-       METRICS & PERCENTAGES
-       ========================================== */
+    /* METRICS */
     .metric { 
       margin-bottom: 12px; 
     }
@@ -250,9 +164,7 @@
     .red { color: #dc2626; }
     .blue { color: #2563eb; }
     
-    /* ==========================================
-       BREAKDOWN SECTIONS
-       ========================================== */
+    /* BREAKDOWN */
     .breakdown {
       margin-top: 12px;
       padding-top: 12px;
@@ -303,36 +215,7 @@
       font-size: 10px;
     }
     
-    /* ==========================================
-       INDEX COMPARISON SECTION
-       ========================================== */
-    .index-section {
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid #d1d5db;
-    }
-    
-    .index-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 4px;
-      font-size: 12px;
-    }
-    
-    .index-label {
-      color: #6b7280;
-      font-weight: 500;
-    }
-    
-    .index-value {
-      font-weight: 600;
-      font-size: 13px;
-    }
-    
-    /* ==========================================
-       STOCK CARDS
-       ========================================== */
+    /* STOCK CARDS */
     .stock {
       background: white;
       border-radius: 12px;
@@ -395,17 +278,7 @@
       font-size: 16px; 
     }
     
-    .stock-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid #e5e7eb;
-    }
-    
-    /* ==========================================
-       DIVIDEND LIST
-       ========================================== */
+    /* DIVIDENDS */
     .dividend-list {
       margin-top: 16px;
       padding-top: 16px;
@@ -439,9 +312,7 @@
       text-decoration: underline; 
     }
     
-    /* ==========================================
-       EMPTY STATE
-       ========================================== */
+    /* EMPTY STATE */
     .empty-state {
       text-align: center;
       padding: 40px 20px;
@@ -458,9 +329,7 @@
       font-size: 14px;
     }
     
-    /* ==========================================
-       STATUS TEXT
-       ========================================== */
+    /* STATUS */
     .status {
       font-size: 12px;
       color: #6b7280;
@@ -468,91 +337,7 @@
       text-align: center;
     }
     
-    /* ==========================================
-       MODAL
-       ========================================== */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .modal.active { 
-      display: flex; 
-    }
-    
-    .modal-content {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      width: 90%;
-      max-width: 400px;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    
-    .modal-content h2 {
-      font-size: 20px;
-      color: #1f2937;
-      margin-bottom: 20px;
-    }
-    
-    .form-group {
-      margin-bottom: 16px;
-    }
-    
-    .form-group label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 6px;
-    }
-    
-    .form-group input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-    
-    .form-buttons {
-      display: flex;
-      gap: 8px;
-      margin-top: 20px;
-    }
-    
-    .form-buttons button {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    
-    .btn-save { 
-      background: #6366f1; 
-      color: white; 
-    }
-    
-    .btn-cancel { 
-      background: #e5e7eb; 
-      color: #4b5563; 
-    }
-    
-    /* ==========================================
-       MOBILE RESPONSIVE
-       ========================================== */
+    /* MOBILE RESPONSIVE */
     @media (max-width: 640px) {
       body { padding: 12px; }
       .card { padding: 16px; }
@@ -615,16 +400,6 @@
       .sub-breakdown .breakdown-row { font-size: 10px; }
       .sub-breakdown .breakdown-pct { font-size: 9px; }
       
-      .index-row { font-size: 11px; }
-      .index-value { font-size: 12px; }
-      
-      #indexDailyData,
-      #vsIndexDailyData,
-      #indexLtdData,
-      #vsIndexLtdData {
-        font-size: 9px !important;
-      }
-      
       .stock { padding: 14px; }
       .stock-code { font-size: 16px; }
       .stock-qty { font-size: 11px; }
@@ -642,19 +417,6 @@
       }
       
       .dividend-franking { font-size: 10px; }
-      
-      .stock-actions button {
-        padding: 10px 12px;
-        min-height: 40px;
-      }
-      
-      .modal-content {
-        width: 95%;
-        max-width: 350px;
-        padding: 20px;
-      }
-      
-      .modal-content h2 { font-size: 18px; }
     }
   </style>
 </head>
@@ -722,23 +484,6 @@
                 </div>
               </div>
             </div>
-            
-            <div class="index-section">
-              <div class="index-row">
-                <span class="index-label">ASX 200</span>
-                <span class="index-value" id="indexDaily">...</span>
-              </div>
-              <div class="index-row" style="font-size: 10px; color: #9ca3af; margin-top: -2px;">
-                <span id="indexDailyData">...</span>
-              </div>
-              <div class="index-row" style="margin-top: 8px;">
-                <span class="index-label">vs ASX 200</span>
-                <span class="index-value" id="vsIndexDaily">...</span>
-              </div>
-              <div class="index-row" style="font-size: 10px; color: #9ca3af; margin-top: -2px;">
-                <span id="vsIndexDailyData">...</span>
-              </div>
-            </div>
           </div>
           
           <div class="column">
@@ -784,23 +529,6 @@
                 </div>
               </div>
             </div>
-            
-            <div class="index-section">
-              <div class="index-row">
-                <span class="index-label">ASX 200</span>
-                <span class="index-value" id="indexLtd">...</span>
-              </div>
-              <div class="index-row" style="font-size: 10px; color: #9ca3af; margin-top: -2px;">
-                <span id="indexLtdData">...</span>
-              </div>
-              <div class="index-row" style="margin-top: 8px;">
-                <span class="index-label">vs ASX 200</span>
-                <span class="index-value" id="vsIndexLtd">...</span>
-              </div>
-              <div class="index-row" style="font-size: 10px; color: #9ca3af; margin-top: -2px;">
-                <span id="vsIndexLtdData">...</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -812,36 +540,8 @@
     
     <div id="emptyState" class="card empty-state">
       <h2>No Stocks Yet</h2>
-      <p>Click "Add" to start building your portfolio</p>
+      <p>Add stocks via localStorage to start tracking</p>
     </div>
-  </div>
-
-  <div id="stockModal" class="modal">
-    <div class="modal-content">
-      <h2 id="modalTitle">Add Stock</h2>
-      <div class="form-group">
-        <label>ASX Code</label>
-        <input type="text" id="stockCode" placeholder="e.g. WOW" style="text-transform: uppercase;">
-      </div>
-      <div class="form-group">
-        <label>Quantity</label>
-        <input type="number" id="stockQty" placeholder="e.g. 1000">
-      </div>
-      <div class="form-group">
-        <label>Cost Per Share ($)</label>
-        <input type="number" step="0.000001" id="stockCost" placeholder="e.g. 28.50">
-      </div>
-      <div class="form-buttons">
-        <button class="btn-cancel" onclick="closeStockModal()">Cancel</button>
-        <button class="btn-save" onclick="saveStock()">Save</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="diagnostic-overlay" id="diagnosticOverlay"></div>
-  <div class="diagnostic" id="diagnosticWindow">
-    <h3>📊 Yahoo Finance Raw Data (ASX 200)</h3>
-    <pre id="diagnosticContent"></pre>
   </div>
 
   <script>
@@ -850,16 +550,9 @@
        ========================================== */
     let portfolio = [];
     let dividends = {};
-    let indexData = {
-      currentPrice: 0,
-      prevClose: 0,
-      startPrice: 8830.90,  // ASX 200 close on 2025-11-10
-      startDate: "2025-11-10"
-    };
-    let editingIndex = -1;
 
     /* ==========================================
-       DATE & TIME UTILITIES (Australia/Sydney)
+       DATE & TIME (Australia/Sydney)
        ========================================== */
     
     function getTodayAU() {
@@ -879,10 +572,8 @@
       const hour = auNow.getHours();
       const minute = auNow.getMinutes();
       
-      // Weekend check
       if (day === 0 || day === 6) return false;
       
-      // Trading hours: 10:00 AM - 4:30 PM AEST/AEDT
       const timeInMinutes = hour * 60 + minute;
       const marketOpen = 10 * 60;
       const marketClose = 16 * 60 + 30;
@@ -918,7 +609,7 @@
     }
 
     /* ==========================================
-       DATA PERSISTENCE (localStorage)
+       DATA PERSISTENCE
        ========================================== */
 
     function loadData() {
@@ -939,7 +630,6 @@
             currentPrice: stock.currentPrice || 0,
             prevClose: 0
           }));
-          console.log('Migrated from v2');
         } else if (v1) {
           const oldPortfolio = JSON.parse(v1);
           portfolio = oldPortfolio.map(stock => ({
@@ -949,45 +639,21 @@
             currentPrice: stock.price || 0,
             prevClose: 0
           }));
-          console.log('Migrated from v1');
         }
       }
       
       const savedDivs = localStorage.getItem('asx-dividends');
       dividends = savedDivs ? JSON.parse(savedDivs) : {};
-      
-      const savedIndex = localStorage.getItem('asx-index-simple');
-      if (savedIndex) {
-        indexData = JSON.parse(savedIndex);
-      }
     }
 
     function saveData() {
       localStorage.setItem('asx-portfolio-simple', JSON.stringify(portfolio));
       localStorage.setItem('asx-dividends', JSON.stringify(dividends));
-      localStorage.setItem('asx-index-simple', JSON.stringify(indexData));
     }
 
     /* ==========================================
        PRICE FETCHING (Yahoo Finance)
-       Simple: Just get current and previous close
        ========================================== */
-
-    function showDiagnostic(data) {
-      const overlay = document.getElementById('diagnosticOverlay');
-      const window = document.getElementById('diagnosticWindow');
-      const content = document.getElementById('diagnosticContent');
-      
-      overlay.classList.add('active');
-      window.classList.add('active');
-      content.textContent = data;
-      
-      // Auto-hide after 10 seconds
-      setTimeout(() => {
-        overlay.classList.remove('active');
-        window.classList.remove('active');
-      }, 10000);
-    }
 
     async function fetchPrice(code) {
       try {
@@ -1007,17 +673,16 @@
         const currentPrice = meta.regularMarketPrice;
         if (!currentPrice) return null;
         
-        // Parse actual close prices with timestamps
+        // Parse closes array for yesterday's actual close
         const closes = result?.indicators?.quote?.[0]?.close;
         const timestamps = result?.timestamp;
         
         if (!closes || !timestamps || closes.length < 2) {
-          // Fallback to meta.previousClose if we can't parse array
-          const prevClose = meta.previousClose || meta.chartPreviousClose;
+          const prevClose = meta.chartPreviousClose || meta.previousClose;
           return prevClose ? { currentPrice, prevClose } : null;
         }
         
-        // Build array of [date, close] pairs
+        // Build array of date/close pairs
         const dailyData = [];
         for (let i = 0; i < timestamps.length; i++) {
           if (closes[i] !== null) {
@@ -1031,95 +696,10 @@
           }
         }
         
-        // Sort by date descending
         dailyData.sort((a, b) => b.date.localeCompare(a.date));
         
-        // Get yesterday's close (most recent close before today)
+        // Calculate yesterday (skip weekends)
         const today = getTodayAU();
-        const prevDayData = dailyData.find(d => d.date < today);
-        
-        if (!prevDayData) {
-          // Fallback
-          const prevClose = meta.previousClose || meta.chartPreviousClose;
-          return prevClose ? { currentPrice, prevClose } : null;
-        }
-        
-        return {
-          currentPrice,
-          prevClose: prevDayData.close
-        };
-      } catch (e) {
-        console.error(`${code}:`, e);
-        return null;
-      }
-    }
-
-    async function fetchIndexData() {
-      try {
-        const timestamp = Date.now();
-        const url = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=5d&_=${timestamp}`;
-        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { cache: 'no-store' });
-        
-        if (!res.ok) return;
-        
-        const data = await res.json();
-        const result = data?.chart?.result?.[0];
-        const meta = result?.meta;
-        
-        if (!meta) return;
-        
-        const currentPrice = meta.regularMarketPrice;
-        if (!currentPrice) return;
-        
-        // Build diagnostic output
-        let diagnostic = '=== META DATA ===\n';
-        diagnostic += `regularMarketPrice: ${meta.regularMarketPrice}\n`;
-        diagnostic += `previousClose: ${meta.previousClose || 'N/A'}\n`;
-        diagnostic += `chartPreviousClose: ${meta.chartPreviousClose || 'N/A'}\n\n`;
-        
-        // Parse actual close prices with timestamps
-        const closes = result?.indicators?.quote?.[0]?.close;
-        const timestamps = result?.timestamp;
-        
-        diagnostic += '=== CLOSES ARRAY (AU Timezone) ===\n';
-        
-        if (!closes || !timestamps || closes.length < 2) {
-          diagnostic += 'No close data available\n';
-          
-          // Fallback to meta.previousClose
-          const prevClose = meta.previousClose || meta.chartPreviousClose;
-          if (prevClose) {
-            indexData.currentPrice = currentPrice;
-            indexData.prevClose = prevClose;
-            diagnostic += `\nUsing meta.previousClose: ${prevClose}\n`;
-          }
-          
-          showDiagnostic(diagnostic);
-          return;
-        }
-        
-        // Build array of [date, close] pairs
-        const dailyData = [];
-        for (let i = 0; i < timestamps.length; i++) {
-          if (closes[i] !== null) {
-            const utcDate = new Date(timestamps[i] * 1000);
-            const auDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
-            const year = auDate.getFullYear();
-            const month = String(auDate.getMonth() + 1).padStart(2, '0');
-            const day = String(auDate.getDate()).padStart(2, '0');
-            const dateStr = `${year}-${month}-${day}`;
-            dailyData.push({ date: dateStr, close: closes[i] });
-            diagnostic += `${dateStr}: ${closes[i].toFixed(2)}\n`;
-          }
-        }
-        
-        // Sort by date descending
-        dailyData.sort((a, b) => b.date.localeCompare(a.date));
-        
-        // Get yesterday's close (most recent close before today)
-        const today = getTodayAU();
-        
-        // Calculate what yesterday should be (skip weekends)
         const yesterdayDate = new Date(today + 'T12:00:00');
         yesterdayDate.setDate(yesterdayDate.getDate() - 1);
         while (yesterdayDate.getDay() === 0 || yesterdayDate.getDay() === 6) {
@@ -1127,46 +707,19 @@
         }
         const yesterday = yesterdayDate.toISOString().split('T')[0];
         
-        diagnostic += `Yesterday should be: ${yesterday}\n`;
-        
-        // Try to find yesterday's exact close
+        // Look for exact yesterday
         const yesterdayData = dailyData.find(d => d.date === yesterday);
         
         if (yesterdayData) {
-          // Found exact yesterday
-          diagnostic += `✓ Found yesterday's close: ${yesterdayData.close.toFixed(2)}\n`;
-          indexData.currentPrice = currentPrice;
-          indexData.prevClose = yesterdayData.close;
+          return { currentPrice, prevClose: yesterdayData.close };
         } else {
-          // Yesterday missing - use chartPreviousClose as better fallback
-          diagnostic += `⚠️ Yesterday's data missing from array!\n`;
-          diagnostic += `Available dates: ${dailyData.map(d => d.date).join(', ')}\n`;
-          
-          const chartPrevClose = meta.chartPreviousClose || meta.previousClose;
-          if (chartPrevClose) {
-            diagnostic += `Using meta.chartPreviousClose: ${chartPrevClose}\n`;
-            indexData.currentPrice = currentPrice;
-            indexData.prevClose = chartPrevClose;
-          } else {
-            diagnostic += `Fallback: using most recent close from array\n`;
-            const prevDayData = dailyData.find(d => d.date < today);
-            if (prevDayData) {
-              indexData.currentPrice = currentPrice;
-              indexData.prevClose = prevDayData.close;
-              diagnostic += `Using ${prevDayData.date}: ${prevDayData.close.toFixed(2)}\n`;
-            }
-          }
+          // Fallback to chartPreviousClose if yesterday missing
+          const prevClose = meta.chartPreviousClose || meta.previousClose;
+          return prevClose ? { currentPrice, prevClose } : null;
         }
-        
-        diagnostic += `\n=== FINAL VALUES ===\n`;
-        diagnostic += `currentPrice: ${indexData.currentPrice}\n`;
-        diagnostic += `prevClose: ${indexData.prevClose.toFixed(2)}\n`;
-        diagnostic += `Daily change: ${(((indexData.currentPrice - indexData.prevClose) / indexData.prevClose) * 100).toFixed(2)}%\n`;
-        
-        showDiagnostic(diagnostic);
       } catch (e) {
-        console.error('ASX 200:', e);
-        showDiagnostic(`ERROR: ${e.message}`);
+        console.error(`${code}:`, e);
+        return null;
       }
     }
 
@@ -1207,8 +760,6 @@
       
       const results = await Promise.all(promises);
       const success = results.filter(r => r).length;
-      
-      await fetchIndexData();
       
       saveData();
       render();
@@ -1345,21 +896,6 @@
       setTimeout(() => status.textContent = '', 3000);
     }
 
-    function clearDividends() {
-      if (!confirm('Clear all dividend data?\n\nYou can re-sync afterwards.')) {
-        return;
-      }
-      
-      dividends = {};
-      saveData();
-      render();
-      
-      const status = document.getElementById('status');
-      status.textContent = '✓ Cleared';
-      status.style.color = '#16a34a';
-      setTimeout(() => status.textContent = '', 3000);
-    }
-
     function calculateDividends(code, qty) {
       const divs = dividends[code] || [];
       let totalDiv = 0;
@@ -1392,83 +928,6 @@
       return { todayDiv, todayFranking };
     }
 
-    /* ==========================================
-       STOCK MANAGEMENT (Modal)
-       ========================================== */
-
-    function openAddModal() {
-      editingIndex = -1;
-      document.getElementById('modalTitle').textContent = 'Add Stock';
-      document.getElementById('stockCode').value = '';
-      document.getElementById('stockCode').disabled = false;
-      document.getElementById('stockQty').value = '';
-      document.getElementById('stockCost').value = '';
-      document.getElementById('stockModal').classList.add('active');
-    }
-
-    function openEditModal(index) {
-      editingIndex = index;
-      const stock = portfolio[index];
-      document.getElementById('modalTitle').textContent = 'Edit Stock';
-      document.getElementById('stockCode').value = stock.code;
-      document.getElementById('stockCode').disabled = true;
-      document.getElementById('stockQty').value = stock.qty;
-      document.getElementById('stockCost').value = stock.cost;
-      document.getElementById('stockModal').classList.add('active');
-    }
-
-    function closeStockModal() {
-      document.getElementById('stockModal').classList.remove('active');
-    }
-
-    function saveStock() {
-      const code = document.getElementById('stockCode').value.toUpperCase().trim();
-      const qty = parseInt(document.getElementById('stockQty').value);
-      const cost = parseFloat(document.getElementById('stockCost').value);
-      
-      if (!code || !qty || !cost || qty <= 0 || cost <= 0) {
-        alert('Please fill in all fields with valid values');
-        return;
-      }
-      
-      if (editingIndex === -1) {
-        const exists = portfolio.some(s => s.code === code);
-        if (exists) {
-          alert(`${code} is already in your portfolio`);
-          return;
-        }
-        
-        portfolio.push({
-          code: code,
-          qty: qty,
-          cost: cost,
-          currentPrice: 0,
-          prevClose: 0
-        });
-      } else {
-        portfolio[editingIndex].qty = qty;
-        portfolio[editingIndex].cost = cost;
-      }
-      
-      saveData();
-      closeStockModal();
-      render();
-      
-      if (portfolio.length === 1 && isMarketOpen()) {
-        updatePrices();
-      }
-    }
-
-    function deleteStock(index) {
-      const stock = portfolio[index];
-      if (confirm(`Delete ${stock.code} from portfolio?`)) {
-        portfolio.splice(index, 1);
-        delete dividends[stock.code];
-        saveData();
-        render();
-      }
-    }
-
     function editDividendFranking(code, divIndex) {
       const div = dividends[code][divIndex];
       const newFranking = prompt(
@@ -1490,7 +949,7 @@
     }
 
     /* ==========================================
-       FORMATTING HELPERS
+       FORMATTING
        ========================================== */
 
     function fmt(num) {
@@ -1557,7 +1016,7 @@
       
       document.getElementById('portfolioCostBase').textContent = fmt(totalCost);
       
-      // Daily calculations
+      // Daily
       const dailyCapital = totalValue - totalPrevValue;
       const dailyCash = todayDivs + todayFranking;
       const dailyTotal = dailyCapital + dailyCash;
@@ -1586,7 +1045,7 @@
       const dailyFrankPct = totalPrevValue > 0 ? (todayFranking / totalPrevValue) * 100 : 0;
       document.getElementById('dailyFrankPct').textContent = todayFranking !== 0 ? pct(dailyFrankPct) : '';
       
-      // Life-to-date calculations
+      // Life-to-date
       const ltdCapital = totalValue - totalCost;
       const ltdCash = totalDivs + totalFranking;
       const ltdTotal = ltdCapital + ltdCash;
@@ -1614,51 +1073,6 @@
       document.getElementById('ltdFrank').textContent = fmt(totalFranking);
       const ltdFrankPct = totalCost > 0 ? (totalFranking / totalCost) * 100 : 0;
       document.getElementById('ltdFrankPct').textContent = totalFranking !== 0 ? pct(ltdFrankPct) : '';
-      
-      // Index comparison - Daily
-      const indexCurrent = indexData.currentPrice;
-      const indexPrev = indexData.prevClose;
-      
-      if (indexCurrent > 0 && indexPrev > 0) {
-        const indexDailyChange = ((indexCurrent - indexPrev) / indexPrev) * 100;
-        const vsIndexDaily = dailyPct - indexDailyChange;
-        
-        document.getElementById('indexDaily').textContent = pct(indexDailyChange);
-        document.getElementById('indexDaily').className = `index-value ${indexDailyChange >= 0 ? 'green' : 'red'}`;
-        document.getElementById('indexDailyData').textContent = `${indexCurrent.toFixed(2)} vs ${indexPrev.toFixed(2)}`;
-        
-        document.getElementById('vsIndexDaily').textContent = pct(vsIndexDaily);
-        document.getElementById('vsIndexDaily').className = `index-value ${vsIndexDaily >= 0 ? 'green' : 'red'}`;
-        document.getElementById('vsIndexDailyData').textContent = `Port ${dailyPct >= 0 ? '+' : ''}${dailyPct.toFixed(2)}% vs Index ${indexDailyChange >= 0 ? '+' : ''}${indexDailyChange.toFixed(2)}%`;
-      } else {
-        document.getElementById('indexDaily').textContent = '...';
-        document.getElementById('indexDaily').className = 'index-value';
-        document.getElementById('indexDailyData').textContent = '';
-        document.getElementById('vsIndexDaily').textContent = '...';
-        document.getElementById('vsIndexDaily').className = 'index-value';
-        document.getElementById('vsIndexDailyData').textContent = '';
-      }
-      
-      // Index comparison - Life-to-date
-      if (indexCurrent > 0 && totalCost > 0) {
-        const indexLtdChange = ((indexCurrent - indexData.startPrice) / indexData.startPrice) * 100;
-        const vsIndexLtd = ltdPct - indexLtdChange;
-        
-        document.getElementById('indexLtd').textContent = pct(indexLtdChange);
-        document.getElementById('indexLtd').className = `index-value ${indexLtdChange >= 0 ? 'green' : 'red'}`;
-        document.getElementById('indexLtdData').textContent = `${indexCurrent.toFixed(2)} vs ${indexData.startPrice.toFixed(2)}`;
-        
-        document.getElementById('vsIndexLtd').textContent = pct(vsIndexLtd);
-        document.getElementById('vsIndexLtd').className = `index-value ${vsIndexLtd >= 0 ? 'green' : 'red'}`;
-        document.getElementById('vsIndexLtdData').textContent = `Port ${ltdPct >= 0 ? '+' : ''}${ltdPct.toFixed(2)}% vs Index ${indexLtdChange >= 0 ? '+' : ''}${indexLtdChange.toFixed(2)}%`;
-      } else {
-        document.getElementById('indexLtd').textContent = '...';
-        document.getElementById('indexLtd').className = 'index-value';
-        document.getElementById('indexLtdData').textContent = '';
-        document.getElementById('vsIndexLtd').textContent = '...';
-        document.getElementById('vsIndexLtd').className = 'index-value';
-        document.getElementById('vsIndexLtdData').textContent = '';
-      }
     }
 
     function renderStocks() {
@@ -1833,11 +1247,6 @@
                 `).join('')}
               </div>
             ` : ''}
-            
-            <div class="stock-actions">
-              <button class="btn-edit" onclick="openEditModal(${i})">Edit</button>
-              <button class="btn-delete" onclick="deleteStock(${i})">Delete</button>
-            </div>
           </div>
         `;
       }
@@ -1854,59 +1263,14 @@
       render();
       updateMarketStatus();
       
-      // Auto-migration: Detect stale/bad data (AGGRESSIVE)
-      let needsRefresh = false;
-      
-      if (portfolio.length > 0) {
-        // Check 1: Any stock has zero prices
+      // Auto-refresh if zero prices and market open
+      if (portfolio.length > 0 && isMarketOpen()) {
         const hasZeroPrices = portfolio.some(s => s.currentPrice === 0);
-        
-        // Check 2: Any stock missing prevClose
-        const hasMissingPrevClose = portfolio.some(s => !s.prevClose || s.prevClose === 0);
-        
-        // Check 3: Index has suspicious gap (>50 points instead of 200)
-        const indexLargeGap = indexData.prevClose > 0 && indexData.currentPrice > 0 &&
-          Math.abs(indexData.currentPrice - indexData.prevClose) > 50;
-        
-        // Check 4: Index prevClose outside reasonable range
-        const indexOutOfRange = indexData.prevClose > 0 && 
-          (indexData.prevClose < 8000 || indexData.prevClose > 10000);
-        
-        // Check 5: Any stock has suspicious daily change (>10%)
-        const stockLargeMove = portfolio.some(s => {
-          if (s.currentPrice > 0 && s.prevClose > 0) {
-            const change = Math.abs((s.currentPrice - s.prevClose) / s.prevClose);
-            return change > 0.10; // 10% daily move is suspicious
-          }
-          return false;
-        });
-        
-        needsRefresh = hasZeroPrices || hasMissingPrevClose || indexLargeGap || 
-                       indexOutOfRange || stockLargeMove;
-        
-        if (needsRefresh) {
-          console.log('Auto-migration triggers:', {
-            hasZeroPrices,
-            hasMissingPrevClose,
-            indexLargeGap,
-            indexOutOfRange,
-            stockLargeMove,
-            indexGap: Math.abs(indexData.currentPrice - indexData.prevClose)
-          });
+        if (hasZeroPrices) {
+          setTimeout(() => updatePrices(), 1000);
         }
       }
       
-      // Auto-refresh if needed and market is open
-      if (needsRefresh && isMarketOpen()) {
-        console.log('Auto-migration: Refreshing with new parsing logic...');
-        setTimeout(() => {
-          updatePrices();
-        }, 1000);
-      } else if (needsRefresh && !isMarketOpen()) {
-        console.log('Auto-migration: Stale data detected, but market is closed. Will auto-fix when market opens.');
-      }
-      
-      // Update market status every minute
       setInterval(updateMarketStatus, 60000);
     });
   </script>
