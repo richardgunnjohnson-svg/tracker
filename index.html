@@ -133,6 +133,61 @@
     }
     
     /* ==========================================
+       DIAGNOSTIC WINDOW
+       ========================================== */
+    .diagnostic {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 2px solid #3b82f6;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      z-index: 2000;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+      display: none;
+    }
+    
+    .diagnostic.active {
+      display: block;
+    }
+    
+    .diagnostic h3 {
+      color: #1f2937;
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+    
+    .diagnostic pre {
+      background: #f3f4f6;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    
+    .diagnostic-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1999;
+      display: none;
+    }
+    
+    .diagnostic-overlay.active {
+      display: block;
+    }
+    
+    /* ==========================================
        COST BASE DISPLAY
        ========================================== */
     .cost-base {
@@ -633,6 +688,9 @@
           <button class="btn btn-divs" id="syncBtn" onclick="syncDividends()">Divs</button>
           <button class="btn btn-purge" onclick="clearDividends()">Purge</button>
         </div>
+        <div style="margin-top: 8px; text-align: center;">
+          <button class="btn" id="fixDataBtn" onclick="forceRefresh()" style="background: #f59e0b; font-size: 12px; padding: 8px 16px;">Fix Data</button>
+        </div>
       </div>
       
       <div class="data-note">
@@ -805,6 +863,12 @@
     </div>
   </div>
 
+  <div class="diagnostic-overlay" id="diagnosticOverlay"></div>
+  <div class="diagnostic" id="diagnosticWindow">
+    <h3>📊 Yahoo Finance Raw Data (ASX 200)</h3>
+    <pre id="diagnosticContent"></pre>
+  </div>
+
   <script>
     /* ==========================================
        GLOBAL STATE
@@ -934,6 +998,22 @@
        Simple: Just get current and previous close
        ========================================== */
 
+    function showDiagnostic(data) {
+      const overlay = document.getElementById('diagnosticOverlay');
+      const window = document.getElementById('diagnosticWindow');
+      const content = document.getElementById('diagnosticContent');
+      
+      overlay.classList.add('active');
+      window.classList.add('active');
+      content.textContent = data;
+      
+      // Auto-hide after 10 seconds
+      setTimeout(() => {
+        overlay.classList.remove('active');
+        window.classList.remove('active');
+      }, 10000);
+    }
+
     async function fetchPrice(code) {
       try {
         const timestamp = Date.now();
@@ -1016,17 +1096,30 @@
         const currentPrice = meta.regularMarketPrice;
         if (!currentPrice) return;
         
+        // Build diagnostic output
+        let diagnostic = '=== META DATA ===\n';
+        diagnostic += `regularMarketPrice: ${meta.regularMarketPrice}\n`;
+        diagnostic += `previousClose: ${meta.previousClose || 'N/A'}\n`;
+        diagnostic += `chartPreviousClose: ${meta.chartPreviousClose || 'N/A'}\n\n`;
+        
         // Parse actual close prices with timestamps
         const closes = result?.indicators?.quote?.[0]?.close;
         const timestamps = result?.timestamp;
         
+        diagnostic += '=== CLOSES ARRAY (AU Timezone) ===\n';
+        
         if (!closes || !timestamps || closes.length < 2) {
+          diagnostic += 'No close data available\n';
+          
           // Fallback to meta.previousClose
           const prevClose = meta.previousClose || meta.chartPreviousClose;
           if (prevClose) {
             indexData.currentPrice = currentPrice;
             indexData.prevClose = prevClose;
+            diagnostic += `\nUsing meta.previousClose: ${prevClose}\n`;
           }
+          
+          showDiagnostic(diagnostic);
           return;
         }
         
@@ -1041,6 +1134,7 @@
             const day = String(auDate.getDate()).padStart(2, '0');
             const dateStr = `${year}-${month}-${day}`;
             dailyData.push({ date: dateStr, close: closes[i] });
+            diagnostic += `${dateStr}: ${closes[i].toFixed(2)}\n`;
           }
         }
         
@@ -1051,20 +1145,44 @@
         const today = getTodayAU();
         const prevDayData = dailyData.find(d => d.date < today);
         
+        diagnostic += `\n=== ANALYSIS ===\n`;
+        diagnostic += `Today (AU): ${today}\n`;
+        
         if (!prevDayData) {
+          diagnostic += 'No previous day data found\n';
+          
           // Fallback
           const prevClose = meta.previousClose || meta.chartPreviousClose;
           if (prevClose) {
             indexData.currentPrice = currentPrice;
             indexData.prevClose = prevClose;
+            diagnostic += `Using meta.previousClose: ${prevClose}\n`;
           }
+          
+          showDiagnostic(diagnostic);
           return;
+        }
+        
+        diagnostic += `Previous day found: ${prevDayData.date} = ${prevDayData.close.toFixed(2)}\n`;
+        diagnostic += `\n=== FINAL VALUES ===\n`;
+        diagnostic += `currentPrice: ${currentPrice}\n`;
+        diagnostic += `prevClose (from array): ${prevDayData.close.toFixed(2)}\n`;
+        diagnostic += `prevClose (from meta): ${meta.previousClose}\n`;
+        
+        const diff = Math.abs(prevDayData.close - meta.previousClose);
+        diagnostic += `Difference: ${diff.toFixed(2)} points\n`;
+        
+        if (diff > 50) {
+          diagnostic += '\n⚠️ LARGE DIFFERENCE - Using array value!\n';
         }
         
         indexData.currentPrice = currentPrice;
         indexData.prevClose = prevDayData.close;
+        
+        showDiagnostic(diagnostic);
       } catch (e) {
         console.error('ASX 200:', e);
+        showDiagnostic(`ERROR: ${e.message}`);
       }
     }
 
@@ -1752,29 +1870,56 @@
       render();
       updateMarketStatus();
       
-      // Auto-migration: Detect stale/bad data
+      // Auto-migration: Detect stale/bad data (AGGRESSIVE)
       let needsRefresh = false;
       
-      // Check if any stocks have zero prices or missing prevClose
       if (portfolio.length > 0) {
+        // Check 1: Any stock has zero prices
         const hasZeroPrices = portfolio.some(s => s.currentPrice === 0);
+        
+        // Check 2: Any stock missing prevClose
         const hasMissingPrevClose = portfolio.some(s => !s.prevClose || s.prevClose === 0);
         
-        // Check if index has suspicious prevClose (outside reasonable range)
-        const indexSuspicious = indexData.prevClose > 0 && 
-          (Math.abs(indexData.currentPrice - indexData.prevClose) > 200 || 
-           indexData.prevClose < 8000 || 
-           indexData.prevClose > 10000);
+        // Check 3: Index has suspicious gap (>50 points instead of 200)
+        const indexLargeGap = indexData.prevClose > 0 && indexData.currentPrice > 0 &&
+          Math.abs(indexData.currentPrice - indexData.prevClose) > 50;
         
-        needsRefresh = hasZeroPrices || hasMissingPrevClose || indexSuspicious;
+        // Check 4: Index prevClose outside reasonable range
+        const indexOutOfRange = indexData.prevClose > 0 && 
+          (indexData.prevClose < 8000 || indexData.prevClose > 10000);
+        
+        // Check 5: Any stock has suspicious daily change (>10%)
+        const stockLargeMove = portfolio.some(s => {
+          if (s.currentPrice > 0 && s.prevClose > 0) {
+            const change = Math.abs((s.currentPrice - s.prevClose) / s.prevClose);
+            return change > 0.10; // 10% daily move is suspicious
+          }
+          return false;
+        });
+        
+        needsRefresh = hasZeroPrices || hasMissingPrevClose || indexLargeGap || 
+                       indexOutOfRange || stockLargeMove;
+        
+        if (needsRefresh) {
+          console.log('Auto-migration triggers:', {
+            hasZeroPrices,
+            hasMissingPrevClose,
+            indexLargeGap,
+            indexOutOfRange,
+            stockLargeMove,
+            indexGap: Math.abs(indexData.currentPrice - indexData.prevClose)
+          });
+        }
       }
       
       // Auto-refresh if needed and market is open
       if (needsRefresh && isMarketOpen()) {
-        console.log('Auto-migration: Detected stale data, refreshing...');
+        console.log('Auto-migration: Refreshing with new parsing logic...');
         setTimeout(() => {
           updatePrices();
         }, 1000);
+      } else if (needsRefresh && !isMarketOpen()) {
+        console.log('Auto-migration: Stale data detected, but market is closed. Will auto-fix when market opens.');
       }
       
       // Update market status every minute
