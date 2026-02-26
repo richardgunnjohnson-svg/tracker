@@ -1143,41 +1143,50 @@
         
         // Get yesterday's close (most recent close before today)
         const today = getTodayAU();
-        const prevDayData = dailyData.find(d => d.date < today);
         
-        diagnostic += `\n=== ANALYSIS ===\n`;
-        diagnostic += `Today (AU): ${today}\n`;
+        // Calculate what yesterday should be (skip weekends)
+        const yesterdayDate = new Date(today + 'T12:00:00');
+        yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+        while (yesterdayDate.getDay() === 0 || yesterdayDate.getDay() === 6) {
+          yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+        }
+        const yesterday = yesterdayDate.toISOString().split('T')[0];
         
-        if (!prevDayData) {
-          diagnostic += 'No previous day data found\n';
+        diagnostic += `Yesterday should be: ${yesterday}\n`;
+        
+        // Try to find yesterday's exact close
+        const yesterdayData = dailyData.find(d => d.date === yesterday);
+        
+        if (yesterdayData) {
+          // Found exact yesterday
+          diagnostic += `✓ Found yesterday's close: ${yesterdayData.close.toFixed(2)}\n`;
+          indexData.currentPrice = currentPrice;
+          indexData.prevClose = yesterdayData.close;
+        } else {
+          // Yesterday missing - use chartPreviousClose as better fallback
+          diagnostic += `⚠️ Yesterday's data missing from array!\n`;
+          diagnostic += `Available dates: ${dailyData.map(d => d.date).join(', ')}\n`;
           
-          // Fallback
-          const prevClose = meta.previousClose || meta.chartPreviousClose;
-          if (prevClose) {
+          const chartPrevClose = meta.chartPreviousClose || meta.previousClose;
+          if (chartPrevClose) {
+            diagnostic += `Using meta.chartPreviousClose: ${chartPrevClose}\n`;
             indexData.currentPrice = currentPrice;
-            indexData.prevClose = prevClose;
-            diagnostic += `Using meta.previousClose: ${prevClose}\n`;
+            indexData.prevClose = chartPrevClose;
+          } else {
+            diagnostic += `Fallback: using most recent close from array\n`;
+            const prevDayData = dailyData.find(d => d.date < today);
+            if (prevDayData) {
+              indexData.currentPrice = currentPrice;
+              indexData.prevClose = prevDayData.close;
+              diagnostic += `Using ${prevDayData.date}: ${prevDayData.close.toFixed(2)}\n`;
+            }
           }
-          
-          showDiagnostic(diagnostic);
-          return;
         }
         
-        diagnostic += `Previous day found: ${prevDayData.date} = ${prevDayData.close.toFixed(2)}\n`;
         diagnostic += `\n=== FINAL VALUES ===\n`;
-        diagnostic += `currentPrice: ${currentPrice}\n`;
-        diagnostic += `prevClose (from array): ${prevDayData.close.toFixed(2)}\n`;
-        diagnostic += `prevClose (from meta): ${meta.previousClose}\n`;
-        
-        const diff = Math.abs(prevDayData.close - meta.previousClose);
-        diagnostic += `Difference: ${diff.toFixed(2)} points\n`;
-        
-        if (diff > 50) {
-          diagnostic += '\n⚠️ LARGE DIFFERENCE - Using array value!\n';
-        }
-        
-        indexData.currentPrice = currentPrice;
-        indexData.prevClose = prevDayData.close;
+        diagnostic += `currentPrice: ${indexData.currentPrice}\n`;
+        diagnostic += `prevClose: ${indexData.prevClose.toFixed(2)}\n`;
+        diagnostic += `Daily change: ${(((indexData.currentPrice - indexData.prevClose) / indexData.prevClose) * 100).toFixed(2)}%\n`;
         
         showDiagnostic(diagnostic);
       } catch (e) {
