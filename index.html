@@ -1752,11 +1752,29 @@
       render();
       updateMarketStatus();
       
-      if (portfolio.length > 0 && isMarketOpen()) {
+      // Auto-migration: Detect stale/bad data
+      let needsRefresh = false;
+      
+      // Check if any stocks have zero prices or missing prevClose
+      if (portfolio.length > 0) {
         const hasZeroPrices = portfolio.some(s => s.currentPrice === 0);
-        if (hasZeroPrices) {
+        const hasMissingPrevClose = portfolio.some(s => !s.prevClose || s.prevClose === 0);
+        
+        // Check if index has suspicious prevClose (outside reasonable range)
+        const indexSuspicious = indexData.prevClose > 0 && 
+          (Math.abs(indexData.currentPrice - indexData.prevClose) > 200 || 
+           indexData.prevClose < 8000 || 
+           indexData.prevClose > 10000);
+        
+        needsRefresh = hasZeroPrices || hasMissingPrevClose || indexSuspicious;
+      }
+      
+      // Auto-refresh if needed and market is open
+      if (needsRefresh && isMarketOpen()) {
+        console.log('Auto-migration: Detected stale data, refreshing...');
+        setTimeout(() => {
           updatePrices();
-        }
+        }, 1000);
       }
       
       // Update market status every minute
