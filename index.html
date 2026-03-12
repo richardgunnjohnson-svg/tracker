@@ -721,7 +721,7 @@
       try {
         const timestamp = Date.now();
         const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1d&range=5d&_=${timestamp}`;
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(url)}`;
         
         const res = await fetch(proxyUrl, { cache: 'no-store' });
         if (!res.ok) return null;
@@ -793,7 +793,7 @@
       try {
         const timestamp = Date.now();
         const url = `https://query1.finance.yahoo.com/v8/finance/chart/%5EAXJO?interval=1d&range=5d&_=${timestamp}`;
-        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { cache: 'no-store' });
+        const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(url)}`, { cache: 'no-store' });
         
         if (!res.ok) return;
         
@@ -959,7 +959,7 @@
     async function fetchDividends(code) {
       try {
         const url = `https://query1.finance.yahoo.com/v8/finance/chart/${code}.AX?interval=1mo&range=1y&events=div`;
-        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+        const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(url)}`);
         
         if (!res.ok) return [];
         
